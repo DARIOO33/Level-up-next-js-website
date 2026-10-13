@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { localRedirect } from '@/i18n/server';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { db } from '@/lib/db';
 import type { AdminUser, Role } from '@/lib/types';
@@ -10,8 +10,8 @@ export const metadata: Metadata = { title: 'Admin Panel', robots: { index: false
 
 export default async function AdminPage() {
   const me = await getSessionUser();
-  if (!me) redirect('/login?next=/admin');
-  if (!isAdmin(me)) redirect('/');
+  if (!me) return localRedirect('/login?next=/admin');
+  if (!isAdmin(me)) return localRedirect('/');
 
   const [orders, products, reviews, activity, coupons, messages, settings, userRows] = await Promise.all([
     getAllOrders(),

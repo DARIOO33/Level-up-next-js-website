@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import Link from '@/components/Link';
 import { Package } from 'lucide-react';
 import { OrdersList } from '@/components/orders/OrdersList';
 import { EmptyState } from '@/components/ui';
 import { plural } from '@/i18n';
-import { getT } from '@/i18n/server';
+import { getT, localRedirect } from '@/i18n/server';
 import { getOrdersForUser } from '@/server/data';
 import { getSessionUser } from '@/server/session';
 
@@ -13,7 +12,7 @@ export const metadata: Metadata = { title: 'My Orders', robots: { index: false }
 
 export default async function OrdersPage() {
   const user = await getSessionUser();
-  if (!user) redirect('/login?next=/orders');
+  if (!user) return localRedirect('/login?next=/orders');
   const [t, orders] = await Promise.all([getT(), getOrdersForUser(user.id)]);
 
   return (

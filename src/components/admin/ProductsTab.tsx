@@ -218,7 +218,7 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
 
   const submit = () => {
     // If a watched variant is coming back in stock, ask whether to email the people waiting.
-    const restocking = isEdit && watchers?.outOfStockWithWatchers.some((w) => Number(form.variants.find((v) => v.id === w.variantId)?.stock ?? 0) > 0);
+    const restocking = isEdit && watchers?.outOfStockVariantIds.some((id) => Number(form.variants.find((v) => v.id === id)?.stock ?? 0) > 0);
     if (restocking) setAskNotify(true);
     else save(false);
   };
@@ -233,8 +233,7 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
           <p className="flex items-start gap-3 rounded-2xl bg-brand-500/10 p-4 text-sm">
             <BellRing size={17} className="mt-0.5 shrink-0 text-brand-500" />
             <span>
-              {watchers.totalWatchers} customer{watchers.totalWatchers === 1 ? ' is' : 's are'} waiting for a restock
-              {watchers.outOfStockWithWatchers.length > 0 && <> — {watchers.outOfStockWithWatchers.map((w) => `${w.variantTitle} (${w.watcherCount})`).join(', ')}</>}.
+              {watchers.totalWatchers} customer{watchers.totalWatchers === 1 ? ' is' : 's are'} waiting for a restock of this product.
             </span>
           </p>
         )}
@@ -326,7 +325,7 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
         </div>
       </form>
 
-      <Confirm open={askNotify} title="Notify waiting customers?" body="Stock is coming back for a variant people asked to be notified about. Send them the back-in-stock email now?" confirmLabel="Save & notify" cancelLabel="Save without notifying" busy={pending} onConfirm={() => { setAskNotify(false); save(true); }} onCancel={() => { setAskNotify(false); save(false); }} onClose={() => setAskNotify(false)} />
+      <Confirm open={askNotify} title="Notify waiting customers?" body="Stock is coming back for a product customers asked to be notified about. Send them the back-in-stock email now?" confirmLabel="Save & notify" cancelLabel="Save without notifying" busy={pending} onConfirm={() => { setAskNotify(false); save(true); }} onCancel={() => { setAskNotify(false); save(false); }} onClose={() => setAskNotify(false)} />
     </Modal>
   );
 }

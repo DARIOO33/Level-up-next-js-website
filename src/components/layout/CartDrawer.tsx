@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { fill, plural } from '@/i18n';
 import { useT } from '@/i18n/client';

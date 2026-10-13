@@ -1,7 +1,6 @@
 'use client';
-import { createContext, useContext, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { LOCALE_COOKIE, type Dict, type Locale } from './index';
+import { createContext, useCallback, useContext, type ReactNode } from 'react';
+import { DEFAULT_LOCALE, LOCALE_COOKIE, localizePath, stripLocale, type Dict, type Locale } from './index';
 
 const I18nContext = createContext<{ locale: Locale; t: Dict } | null>(null);
 
@@ -19,8 +18,13 @@ function useI18n() {
 export const useT = () => useI18n().t;
 export const useLocale = () => useI18n().locale;
 
+/** `const to = useLocalePath(); router.push(to('/shop'))` — adds `/fr` on the French site. Safe outside the provider. */
+export function useLocalePath() {
+  const locale = useContext(I18nContext)?.locale ?? DEFAULT_LOCALE;
+  return useCallback((path: string) => localizePath(path, locale), [locale]);
+}
+
 export function useSwitchLocale() {
-  const router = useRouter();
   const { locale } = useI18n();
   return () => {
     const next: Locale = locale === 'en' ? 'fr' : 'en';
@@ -29,6 +33,8 @@ export function useSwitchLocale() {
     try {
       localStorage.setItem('i18nextLng', next);
     } catch {}
-    router.refresh();
+    // Each language has its own URL. A full load is needed: the shared layout (nav, footer, <html lang>) changes too.
+    const { pathname, search, hash } = window.location;
+    window.location.assign(localizePath(`${stripLocale(pathname)}${search}${hash}`, next));
   };
 }

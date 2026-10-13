@@ -1,9 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { usePathname } from 'next/navigation';
 import { ArrowUp, GitCompareArrows, X } from 'lucide-react';
 import { fill } from '@/i18n';
+import { stripLocale } from '@/i18n/config';
 import { useT } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 import { useCompareStore, useHydrated } from '@/store';
@@ -11,7 +12,7 @@ import { useCompareStore, useHydrated } from '@/store';
 /** Compare pill + back-to-top button, bottom of the viewport. */
 export function Floating() {
   const t = useT();
-  const pathname = usePathname();
+  const pathname = stripLocale(usePathname());
   const hydrated = useHydrated();
   const { ids, clear } = useCompareStore();
   const [showTop, setShowTop] = useState(false);

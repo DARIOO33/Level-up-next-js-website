@@ -1,9 +1,9 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { localRedirect } from '@/i18n/server';
 import { auth, SIGNUP_PROOF_HEADER, signupProof } from '@/lib/auth';
 import { db, mongoDb } from '@/lib/db';
 import { sendOtpEmail, sendPasswordChangedEmail } from '@/lib/email';
@@ -71,7 +71,7 @@ export async function registerWithOtp(input: z.input<typeof registerSchema>, nex
     }
     await mongoDb.collection('users').updateOne({ email }, { $set: { emailVerified: true } });
     const safeNext = typeof next === 'string' && next.startsWith('/') && !next.startsWith('//') ? next : '/';
-    redirect(`/login?step=address&next=${encodeURIComponent(safeNext)}`);
+    return localRedirect(`/login?step=address&next=${encodeURIComponent(safeNext)}`);
   });
 }
 
@@ -218,35 +218,32 @@ export async function toggleWishlist(productParam: string): Promise<ActionResult
 }
 
 // ── Back-in-stock alerts ────────────────────────────────────────────────────
-// Only the user id + variant id are stored on the product — never an email.
+// A customer watches a product as a whole: they are told when any of its variants
+// comes back. Only the user id is stored on the product — never an email.
 
-const normaliseVariant = (value?: string | null) => (value ? String(value) : null);
-const watches = (w: any, userId: string, variantId: string | null) =>
-  String(w.userId) === userId && (variantId ? w.variantId === variantId : true);
+const isWatcher = (w: any, userId: string) => String(w.userId) === userId;
 
-export async function getNotifyStatus(productParam: string, variantId?: string | null): Promise<ActionResult<{ isWatching: boolean }>> {
+export async function getNotifyStatus(productParam: string): Promise<ActionResult<{ isWatching: boolean }>> {
   return run(async () => {
     const user = await requireUser();
     const product = await findProductRow(productParam);
     if (!product) return fail('Product not found');
-    const v = normaliseVariant(variantId);
-    return ok({ isWatching: (product.stockWatchers ?? []).some((w: any) => watches(w, user.id, v)) });
+    return ok({ isWatching: (product.stockWatchers ?? []).some((w: any) => isWatcher(w, user.id)) });
   });
 }
 
-export async function toggleNotify(productParam: string, variantId?: string | null): Promise<ActionResult<{ isWatching: boolean }>> {
+export async function toggleNotify(productParam: string): Promise<ActionResult<{ isWatching: boolean }>> {
   return run<{ isWatching: boolean }>(async () => {
     const user = await requireUser();
     const product = await findProductRow(productParam);
     if (!product) return fail('Product not found');
-    const v = normaliseVariant(variantId);
     const watchers: any[] = product.stockWatchers ?? [];
     const productId = String(product._id);
 
-    if (watchers.some((w) => watches(w, user.id, v))) {
+    if (watchers.some((w) => isWatcher(w, user.id))) {
       await db.orm.products.where({ _id: productId }).update({
         stockWatchers: watchers
-          .filter((w) => !watches(w, user.id, v))
+          .filter((w) => !isWatcher(w, user.id))
           .map((w) => ({ _id: newId(String(w._id)), userId: String(w.userId), variantId: w.variantId ?? null })),
       });
       return ok({ isWatching: false }, 'Notification removed');
@@ -254,7 +251,7 @@ export async function toggleNotify(productParam: string, variantId?: string | nu
 
     await db.orm.products
       .where({ _id: productId })
-      .update((p) => [p.stockWatchers.push({ _id: newId(), userId: user.id, variantId: v })]);
+      .update((p) => [p.stockWatchers.push({ _id: newId(), userId: user.id, variantId: null })]);
     return ok({ isWatching: true }, "We'll notify you when this is back in stock!");
   });
 }

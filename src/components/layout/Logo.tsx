@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { cn } from '@/lib/utils';
 
 /** Both artworks are rendered and swapped with CSS, so the right one shows before hydration. */

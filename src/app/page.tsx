@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { ArrowRight, Award, BadgeCheck, Cable, Check, Headphones, Quote, Shield, Truck, Usb, X, Zap } from 'lucide-react';
 import { RecentlyViewed } from '@/components/home/RecentlyViewed';
 import { Tuner } from '@/components/home/Tuner';
 import { ProductGrid } from '@/components/product/ProductCard';
 import { Reveal, Stars } from '@/components/ui';
-import { getT } from '@/i18n/server';
+import { alternatesFor, getT } from '@/i18n/server';
 import { getApprovedReviews, getProducts, getSettings } from '@/server/data';
 
-export const metadata: Metadata = { alternates: { canonical: '/' } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { alternates: await alternatesFor('/') };
+}
 
 const FEATURE_ICONS = [Headphones, Zap, Shield, Award];
 const PERK_ICONS = [Truck, BadgeCheck, Award, Headphones];

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { localRedirect } from '@/i18n/server';
 import { AuthView } from '@/components/auth/AuthView';
 import { getSessionUser } from '@/server/session';
 
@@ -14,6 +14,6 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
   const user = await getSessionUser();
   // A freshly registered user stays here for the optional "first address" step.
   const onboarding = user && params.step === 'address' ? { name: user.name, phone: user.phoneNumber } : null;
-  if (user && !onboarding) redirect(next);
+  if (user && !onboarding) return localRedirect(next);
   return <AuthView next={next} initialMode={params.mode === 'register' ? 'register' : 'login'} onboarding={onboarding} />;
 }

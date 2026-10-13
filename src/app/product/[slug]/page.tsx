@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { RecentlyViewed } from '@/components/home/RecentlyViewed';
 import { ProductGrid } from '@/components/product/ProductCard';
 import { ProductDetail } from '@/components/product/ProductDetail';
-import { getT } from '@/i18n/server';
+import { localizePath, type Locale } from '@/i18n';
+import { alternatesFor, getLocale, getT } from '@/i18n/server';
 import { CATEGORY_LABELS } from '@/lib/constants';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import type { Product, Review } from '@/lib/types';
@@ -21,19 +22,22 @@ export async function generateMetadata({ params }: PageProps<'/product/[slug]'>)
   const price = minPrice(product);
   const brand = product.category === 'iems' ? product.subCategory : null;
   const title = `${product.name} Tunisie — Prix ${price} TND`;
+  const [locale, alternates] = await Promise.all([getLocale(), alternatesFor(`/product/${segment}`)]);
   const description = (
     product.description ||
-    `Buy ${product.name} in Tunisia at Level Up TN. Authentic product, free delivery in 24–72h, cash on delivery.`
+    (locale === 'fr'
+      ? `Achetez ${product.name} en Tunisie chez Level Up TN. Produit authentique, livraison gratuite en 24–72h, paiement à la livraison.`
+      : `Buy ${product.name} in Tunisia at Level Up TN. Authentic product, free delivery in 24–72h, cash on delivery.`)
   ).slice(0, 160);
 
   return {
     title,
     description,
     keywords: [product.name, `${product.name} Tunisia`, `${product.name} Tunisie`, `${product.name} prix`, ...(brand ? [`${brand} Tunisia`, `${brand} IEM`] : []), 'IEM Tunisia', 'Level Up TN'],
-    alternates: { canonical: `/product/${segment}` },
+    alternates,
     openGraph: {
       type: 'website',
-      url: `${SITE_URL}/product/${segment}`,
+      url: alternates.canonical,
       siteName: SITE_NAME,
       title,
       description,
@@ -43,8 +47,8 @@ export async function generateMetadata({ params }: PageProps<'/product/[slug]'>)
   };
 }
 
-function productSchema(product: Product, reviews: Review[], avg: number | null) {
-  const url = `${SITE_URL}/product/${product.slug || product.id}`;
+function productSchema(product: Product, reviews: Review[], avg: number | null, locale: Locale) {
+  const url = `${SITE_URL}${localizePath(`/product/${product.slug || product.id}`, locale)}`;
   const brand = product.category === 'iems' ? product.subCategory : null;
   return {
     '@context': 'https://schema.org',
@@ -103,13 +107,13 @@ function productSchema(product: Product, reviews: Review[], avg: number | null) 
   };
 }
 
-const breadcrumbSchema = (product: Product) => ({
+const breadcrumbSchema = (product: Product, locale: Locale) => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
-    { '@type': 'ListItem', position: 2, name: 'Shop', item: `${SITE_URL}/shop` },
-    { '@type': 'ListItem', position: 3, name: product.name, item: `${SITE_URL}/product/${product.slug || product.id}` },
+    { '@type': 'ListItem', position: 1, name: locale === 'fr' ? 'Accueil' : 'Home', item: `${SITE_URL}${localizePath('/', locale)}` },
+    { '@type': 'ListItem', position: 2, name: locale === 'fr' ? 'Boutique' : 'Shop', item: `${SITE_URL}${localizePath('/shop', locale)}` },
+    { '@type': 'ListItem', position: 3, name: product.name, item: `${SITE_URL}${localizePath(`/product/${product.slug || product.id}`, locale)}` },
   ],
 });
 
@@ -118,7 +122,7 @@ export default async function ProductPage({ params }: PageProps<'/product/[slug]
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const [t, { reviews, count, avg }, all] = await Promise.all([getT(), getProductReviews(product.id), getProducts()]);
+  const [t, locale, { reviews, count, avg }, all] = await Promise.all([getT(), getLocale(), getProductReviews(product.id), getProducts()]);
   // Same brand first, then the rest of the category.
   const related = all
     .filter((p) => p.id !== product.id && p.category === product.category)
@@ -127,8 +131,8 @@ export default async function ProductPage({ params }: PageProps<'/product/[slug]
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(productSchema(product, reviews, avg))} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(breadcrumbSchema(product))} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(productSchema(product, reviews, avg, locale))} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(breadcrumbSchema(product, locale))} />
       <ProductDetail product={product} reviews={reviews} reviewCount={count} reviewAvg={avg} />
       {related.length > 0 && (
         <section className="shell py-16">

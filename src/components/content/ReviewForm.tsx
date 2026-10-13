@@ -1,6 +1,6 @@
 'use client';
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { toast } from 'sonner';
 import { CheckCircle2, Star } from 'lucide-react';
 import { Field, Spinner } from '@/components/ui';

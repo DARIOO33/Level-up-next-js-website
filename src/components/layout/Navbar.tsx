@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { ACCESSORY_SUBS, BRAND_GUIDES, BRAND_NOTES } from '@/lib/constants';
-import { useLocale, useSwitchLocale, useT } from '@/i18n/client';
+import { stripLocale } from '@/i18n/config';
+import { useLocale, useLocalePath, useSwitchLocale, useT } from '@/i18n/client';
 import type { SessionUser } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { cartCount, useCartStore, useCompareStore, useHydrated } from '@/store';
@@ -36,8 +37,9 @@ export function Navbar() {
   const t = useT();
   const locale = useLocale();
   const switchLocale = useSwitchLocale();
-  const pathname = usePathname();
+  const pathname = stripLocale(usePathname());
   const router = useRouter();
+  const to = useLocalePath();
   const { resolvedTheme, setTheme } = useTheme();
   const { user, settings } = useApp();
   const hydrated = useHydrated();
@@ -90,7 +92,7 @@ export function Navbar() {
     await authClient.signOut();
     setMenu(null);
     toast.success(locale === 'fr' ? 'Déconnecté' : 'Logged out');
-    router.push('/');
+    router.push(to('/'));
     router.refresh();
   };
 

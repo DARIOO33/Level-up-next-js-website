@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { localRedirect } from '@/i18n/server';
 import { ProfileView } from '@/components/account/ProfileView';
 import { userHasPassword } from '@/lib/legacy-auth';
 import { getUserRow, toAddress, toNotification } from '@/server/data';
@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'My Profile', robots: { index: false 
 
 export default async function ProfilePage() {
   const user = await getSessionUser();
-  if (!user) redirect('/login?next=/profile');
+  if (!user) return localRedirect('/login?next=/profile');
   const [row, hasPassword] = await Promise.all([getUserRow(user.id), userHasPassword(user.id)]);
   const notifications = (row?.notifications ?? []).map(toNotification).reverse().slice(0, 20);
   return (

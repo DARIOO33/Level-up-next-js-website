@@ -1,23 +1,44 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, Check } from 'lucide-react';
 import { ProductGrid } from '@/components/product/ProductCard';
 import { Reveal } from '@/components/ui';
+import { fill } from '@/i18n';
+import { alternatesFor, getLocale } from '@/i18n/server';
 import { BRAND_PAGES } from '@/lib/brands';
+import { BRAND_PAGES_FR, BRAND_UI } from '@/lib/brands-fr';
+import { SITE_NAME } from '@/lib/site';
 import { formatPrice } from '@/lib/utils';
 import { getProducts } from '@/server/data';
 
 export async function generateMetadata({ params }: PageProps<'/brands/[brand]'>): Promise<Metadata> {
   const { brand } = await params;
-  return BRAND_PAGES[brand.toLowerCase()]?.metadata ?? { title: 'Brand not found', robots: { index: false } };
+  const key = brand.toLowerCase();
+  const entry = BRAND_PAGES[key];
+  if (!entry) return { title: 'Brand not found', robots: { index: false } };
+  const [locale, alternates] = await Promise.all([getLocale(), alternatesFor(`/brands/${key}`)]);
+  const fr = locale === 'fr' ? BRAND_PAGES_FR[key] : undefined;
+  if (!fr) return { ...entry.metadata, alternates, openGraph: { ...entry.metadata.openGraph, url: alternates.canonical } };
+  return {
+    title: { absolute: fr.title },
+    description: fr.description,
+    keywords: entry.metadata.keywords,
+    alternates,
+    openGraph: { type: 'website', siteName: SITE_NAME, title: fr.title, description: fr.description, url: alternates.canonical },
+    twitter: { card: 'summary_large_image', title: fr.title, description: fr.description },
+  };
 }
 
 export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>) {
   const { brand: key } = await params;
   const entry = BRAND_PAGES[key.toLowerCase()];
   if (!entry) notFound();
-  const { brand } = entry;
+  const locale = await getLocale();
+  const fr = locale === 'fr' ? BRAND_PAGES_FR[key.toLowerCase()] : undefined;
+  const brand = fr ? { ...entry.brand, ...fr.brand } : entry.brand;
+  const ui = BRAND_UI[locale];
+  const named = (text: string) => fill(text, { brand: brand.name });
   const accent = brand.accentColor ?? '#7c3aff';
   const products = (await getProducts()).filter((p) => p.name.toLowerCase().includes(brand.name.toLowerCase()) || p.subCategory?.toLowerCase() === brand.slug.toLowerCase());
 
@@ -36,12 +57,12 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
         <div className="pointer-events-none absolute -right-24 -top-24 size-[480px] rounded-full opacity-40 blur-[120px]" style={{ background: accent }} aria-hidden />
         <div className="shell relative py-24 lg:py-32">
           <p className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: accent }}>
-            <span className="h-px w-6 bg-current" /> Brand guide
+            <span className="h-px w-6 bg-current" /> {ui.eyebrow}
           </p>
           <h1 className="display mt-6 text-[clamp(3.5rem,11vw,9rem)] uppercase">{brand.name}</h1>
           <p className="mt-5 max-w-2xl text-lg text-white/70">{brand.tagline}</p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <a href="#products" className="btn btn-lg text-black" style={{ background: accent }}>Shop {brand.name} <ArrowRight size={17} /></a>
+            <a href="#products" className="btn btn-lg text-black" style={{ background: accent }}>{named(ui.shop)} <ArrowRight size={17} /></a>
             <a href="#faq" className="btn btn-lg border border-white/25 text-white hover:bg-white/10">FAQ</a>
           </div>
         </div>
@@ -50,7 +71,7 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
       {/* About + highlights */}
       <section className="shell grid gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <Reveal>
-          <h2 className="display text-4xl uppercase sm:text-5xl">{brand.name} in Tunisia</h2>
+          <h2 className="display text-4xl uppercase sm:text-5xl">{named(ui.about)}</h2>
           <div className="mt-6 grid gap-4 text-[15px] leading-relaxed text-soft">
             {brand.description.map((paragraph) => <p key={paragraph.slice(0, 40)}>{paragraph}</p>)}
           </div>
@@ -73,19 +94,19 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
       {/* Products */}
       <section id="products" className="scroll-mt-24 border-y border-line bg-surface py-20">
         <div className="shell">
-          <h2 className="display text-4xl uppercase sm:text-5xl">Shop {brand.name} in Tunisia</h2>
-          <p className="mt-3 text-soft">All {brand.name} products available for delivery across Tunisia. Free shipping included.</p>
+          <h2 className="display text-4xl uppercase sm:text-5xl">{named(ui.products_title)}</h2>
+          <p className="mt-3 text-soft">{named(ui.products_sub)}</p>
           <div className="mt-10">
             {products.length > 0 ? (
               <ProductGrid products={products} />
             ) : (
               <div className="rounded-3xl border border-dashed border-line p-12 text-center text-soft">
-                No {brand.name} products listed yet — <Link href="/shop" className="font-semibold text-brand-600 hover:underline dark:text-brand-300">check the full shop</Link>.
+                {named(ui.empty)} <Link href="/shop" className="font-semibold text-brand-600 hover:underline dark:text-brand-300">{ui.empty_link}</Link>.
               </div>
             )}
           </div>
           {products.length > 0 && (
-            <Link href={`/shop?brand=${encodeURIComponent(brand.slug)}`} className="btn btn-outline mt-8">View all {brand.name} products <ArrowRight size={15} /></Link>
+            <Link href={`/shop?brand=${encodeURIComponent(brand.slug)}`} className="btn btn-outline mt-8">{named(ui.view_all)} <ArrowRight size={15} /></Link>
           )}
         </div>
       </section>
@@ -93,7 +114,7 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
       {/* Top models */}
       {brand.topModels && brand.topModels.length > 0 && (
         <section className="shell py-20">
-          <h2 className="display text-4xl uppercase sm:text-5xl">Top {brand.name} models</h2>
+          <h2 className="display text-4xl uppercase sm:text-5xl">{named(ui.top_models)}</h2>
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {brand.topModels.map((model) => (
               <article key={model.name} className="card card-hover flex flex-col p-6">
@@ -113,7 +134,7 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
       {/* Comparison */}
       {brand.comparison && (
         <section className="shell pb-20">
-          <h2 className="display text-4xl uppercase sm:text-5xl">{brand.name} model comparison</h2>
+          <h2 className="display text-4xl uppercase sm:text-5xl">{named(ui.comparison)}</h2>
           <div className="card mt-10 overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
@@ -135,7 +156,7 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
 
       {/* FAQ */}
       <section id="faq" className="shell max-w-3xl scroll-mt-24 pb-10">
-        <h2 className="display text-4xl uppercase sm:text-5xl">Common questions</h2>
+        <h2 className="display text-4xl uppercase sm:text-5xl">{ui.faq}</h2>
         <div className="mt-8 grid gap-3">
           {brand.faq.map((item) => (
             <details key={item.q} className="card group p-6 [&_summary::-webkit-details-marker]:hidden">

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, Eye, EyeOff, MailCheck, MapPin } from 'lucide-react';
@@ -10,7 +10,7 @@ import { Field, OtpInput, Spinner } from '@/components/ui';
 import { registerWithOtp, saveAddress, sendSignupOtp } from '@/server/actions/account';
 import { authClient } from '@/lib/auth-client';
 import { fill } from '@/i18n';
-import { useT } from '@/i18n/client';
+import { useLocalePath, useT } from '@/i18n/client';
 import { EMAIL_RE, PHONE_RE } from '@/lib/utils';
 import { useApp } from '../app-context';
 
@@ -20,6 +20,7 @@ type Step = 'form' | 'otp' | 'address';
 export function AuthView({ next, initialMode, onboarding = null }: { next: string; initialMode: Mode; onboarding?: { name: string; phone: string | null } | null }) {
   const t = useT();
   const router = useRouter();
+  const to = useLocalePath();
   const { googleEnabled } = useApp();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [formStep, setStep] = useState<Step>('form');
@@ -35,7 +36,7 @@ export function AuthView({ next, initialMode, onboarding = null }: { next: strin
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [key]: e.target.value }));
   const done = () => {
-    router.push(next);
+    router.push(to(next));
     router.refresh();
   };
 

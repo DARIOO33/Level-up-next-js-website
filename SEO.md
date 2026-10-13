@@ -9,6 +9,7 @@ Main searches: `iem`, `iem tunisie`, `kz iem`, `kz tunisie`, `in ear monitor`, `
 |---|---|
 | `/` | `iem tunisie`, `in ear monitor` |
 | `/shop?cat=iems` | `iem tunisie`, `iems tunisie` (category landing page) |
+| `/fr/...` (French version of all of the above) | `écouteurs intra-auriculaires tunisie`, `iem tunisie prix`, `kz tunisie` |
 | `/brands/kz`, `/brands/7hz`, `/brands/moondrop` | `kz tunisie`, `kz iem`, `7hz tunisie`, … |
 | `/product/<slug>` | `<model> tunisie`, `<model> prix` |
 
@@ -87,17 +88,25 @@ Google allows about 10 requests a day. Everything else is picked up from the sit
 
 Each of these is a page that can rank for a search nobody in Tunisia is answering well:
 
-- A French guide: *Meilleur IEM pour le gaming en Tunisie (2026)*.
+- A guide in French: *Meilleur IEM pour le gaming en Tunisie (2026)*.
 - *IEM c'est quoi ? Guide du débutant* (answers `iem`, `in ear monitor`, `c'est quoi un iem`).
 - *KZ : quel modèle choisir ?* — comparison of the KZ models you stock, with prices.
 - More brand pages when you stock them (CCA, TRN, Simgot, Truthear).
 
-## 7. The biggest remaining gap: French
+## 7. French and English versions
 
-The site has a French translation, but the language is stored in a cookie, so French and English share one
-URL. Google only ever sees the English version. Most Tunisian searches are in French (`écouteurs`, `prix`,
-`tunisie`), so a French version Google can index — at its own URLs such as `/fr/...`, or by making French the
-default — is the single change with the most upside. It is a larger piece of work than the edits above.
+Every page exists at two addresses: English at the plain URL and French under `/fr`
+(`/shop` and `/fr/shop`, `/brands/kz` and `/fr/brands/kz`, …). Each one tells Google about the other
+(hreflang), and the sitemap lists both.
+
+- In Search Console, request indexing for `https://www.levelup-store.tn/fr`,
+  `/fr/shop?cat=iems` and `/fr/brands/kz` as well (section 3).
+- In **Performance**, add the filter **Page → URLs containing `/fr`** to see how the French pages do on their own.
+- Product descriptions come from what you type in the admin panel, in one language only. The French product
+  pages therefore show a French interface around the same description. Writing descriptions in French (or in
+  both languages in the same text) helps the French pages most.
+- The three brand guides are fully translated in `src/lib/brands-fr.ts`. If you edit a guide in
+  `src/lib/brands.ts`, update the French one too.
 
 ## 8. What not to expect
 

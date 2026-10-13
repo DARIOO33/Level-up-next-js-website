@@ -17,11 +17,25 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'], dis
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], display: 'swap' });
 const bricolage = Bricolage_Grotesque({ variable: '--font-bricolage', subsets: ['latin'], display: 'swap', axes: ['wdth', 'opsz'] });
 
-export const metadata: Metadata = {
+const SEO = {
+  en: {
+    title: `IEM Tunisie — KZ, 7Hz & Moondrop In-Ear Monitors | ${SITE_NAME}`,
+    description:
+      'Buy IEMs in Tunisia (IEM Tunisie): KZ, 7Hz and Moondrop in-ear monitors for gaming and music, plus cables, ear tips and DACs. Authentic products, free delivery in 24–72h, cash on delivery.',
+    social: 'IEMs and in-ear monitors in Tunisia for gamers and music lovers. KZ, 7Hz, Moondrop and more — free delivery, cash on delivery.',
+    ogLocale: 'en_US',
+  },
+  fr: {
+    title: `IEM Tunisie — Écouteurs KZ, 7Hz & Moondrop | ${SITE_NAME}`,
+    description:
+      'Achetez vos IEM en Tunisie : écouteurs intra-auriculaires (in-ear monitors) KZ, 7Hz et Moondrop pour le gaming et la musique, câbles, embouts et DAC. Produits authentiques, livraison gratuite en 24–72h, paiement à la livraison.',
+    social: 'IEM et écouteurs intra-auriculaires en Tunisie pour les gamers et les mélomanes. KZ, 7Hz, Moondrop et plus — livraison gratuite, paiement à la livraison.',
+    ogLocale: 'fr_FR',
+  },
+} as const;
+
+const baseMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `IEM Tunisie — KZ, 7Hz & Moondrop In-Ear Monitors | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
-  description:
-    'Buy IEMs in Tunisia (IEM Tunisie): KZ, 7Hz and Moondrop in-ear monitors for gaming and music, plus cables, ear tips and DACs. Authentic products, free delivery in 24–72h, cash on delivery.',
   keywords: [
     'IEM', 'IEM Tunisie', 'IEMs Tunisie', 'KZ Tunisie', 'KZ IEM', 'in ear monitor', 'in ear monitor Tunisie',
     'écouteurs intra-auriculaires Tunisie', 'écouteurs gaming Tunisie', 'KZ', 'KZ earphones Tunisia', 'CCA', 'TRN', 'Moondrop', '7Hz', 'Kinera',
@@ -37,22 +51,27 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   category: 'Electronics & Audio',
   verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    alternateLocale: ['fr_FR', 'ar_TN'],
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `IEM Tunisie — KZ, 7Hz & Moondrop In-Ear Monitors | ${SITE_NAME}`,
-    description: 'IEMs and in-ear monitors in Tunisia for gamers and music lovers. KZ, 7Hz, Moondrop and more — free delivery, cash on delivery.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `IEM Tunisie — KZ, 7Hz & Moondrop | ${SITE_NAME}`,
-    description: 'IEMs and in-ear monitors in Tunisia for gamers and music lovers. Free delivery, cash on delivery.',
-  },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 } },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const seo = SEO[locale];
+  return {
+    ...baseMetadata,
+    title: { default: seo.title, template: `%s | ${SITE_NAME}` },
+    description: seo.description,
+    openGraph: {
+      type: 'website',
+      locale: seo.ogLocale,
+      alternateLocale: locale === 'fr' ? ['en_US'] : ['fr_FR'],
+      siteName: SITE_NAME,
+      title: seo.title,
+      description: seo.social,
+    },
+    twitter: { card: 'summary_large_image', title: seo.title, description: seo.social },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

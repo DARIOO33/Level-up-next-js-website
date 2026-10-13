@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { LegalPage } from '@/components/content/LegalPage';
-import { getT } from '@/i18n/server';
+import { getT, localizedMetadata } from '@/i18n/server';
 
-export const metadata: Metadata = { title: 'Privacy Policy', description: 'How Level Up TN collects, uses and protects your personal data.', alternates: { canonical: '/privacy-policy' } };
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('/privacy-policy', {
+    en: { title: 'Privacy Policy', description: "How Level Up TN collects, uses and protects your personal data." },
+    fr: { title: "Politique de confidentialité", description: "Comment Level Up TN collecte, utilise et protège vos données personnelles." },
+  });
+}
 
 const link = 'font-semibold text-brand-600 hover:underline dark:text-brand-300';
 

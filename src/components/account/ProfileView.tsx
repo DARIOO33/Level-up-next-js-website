@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useTransition } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Bell, ChevronRight, Heart, LayoutDashboard, ListOrdered, LogOut, MapPin, Pencil, Plus, ShieldCheck, Star, Trash2 } from 'lucide-react';
@@ -8,7 +8,7 @@ import { PlaceFields, type Place } from '@/components/AddressFields';
 import { Field, Spinner } from '@/components/ui';
 import { deleteAddress, markNotificationsRead, notePasswordChanged, saveAddress, setDefaultAddress, updateName } from '@/server/actions/account';
 import { authClient } from '@/lib/auth-client';
-import { useLocale, useT } from '@/i18n/client';
+import { useLocale, useLocalePath, useT } from '@/i18n/client';
 import type { Address, Notification } from '@/lib/types';
 import { cn, formatDate, formatDateTime } from '@/lib/utils';
 import { useApp } from '../app-context';
@@ -19,6 +19,7 @@ export function ProfileView({ addresses: initial, notifications, hasPassword, me
   const t = useT();
   const locale = useLocale() === 'fr' ? 'fr-FR' : 'en-GB';
   const router = useRouter();
+  const to = useLocalePath();
   const { user } = useApp();
   const [pending, start] = useTransition();
 
@@ -58,13 +59,13 @@ export function ProfileView({ addresses: initial, notifications, hasPassword, me
       await notePasswordChanged();
       toast.success(t.profile.success_updated);
       await authClient.signOut();
-      router.push('/login');
+      router.push(to('/login'));
       router.refresh();
     });
 
   const logout = async () => {
     await authClient.signOut();
-    router.push('/');
+    router.push(to('/'));
     router.refresh();
   };
 

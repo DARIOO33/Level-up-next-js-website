@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { ContactForm } from '@/components/content/ContactForm';
-import { getT } from '@/i18n/server';
+import { getT, localizedMetadata } from '@/i18n/server';
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description: 'Questions about an order or need help choosing an IEM? Contact Level Up TN — we reply within 24 hours.',
-  alternates: { canonical: '/contact' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('/contact', {
+    en: { title: 'Contact', description: "Questions about an order or need help choosing an IEM? Contact Level Up TN — we reply within 24 hours." },
+    fr: { title: "Contact", description: "Une question sur une commande ou besoin d'aide pour choisir un IEM ? Contactez Level Up TN — réponse sous 24 heures." },
+  });
+}
 
 export default async function ContactPage() {
   const t = await getT();

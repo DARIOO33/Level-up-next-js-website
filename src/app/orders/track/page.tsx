@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { PackageSearch } from 'lucide-react';
-import { getT } from '@/i18n/server';
+import { getT, localRedirect } from '@/i18n/server';
 import { isObjectId } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Track an order', description: 'Follow your Level Up TN order from confirmation to delivery.' };
@@ -13,7 +12,7 @@ export default async function TrackPage({ searchParams }: PageProps<'/orders/tra
   async function track(formData: FormData) {
     'use server';
     const value = String(formData.get('id') ?? '').trim().replace(/^#/, '').toLowerCase();
-    redirect(isObjectId(value) ? `/orders/${value}` : `/orders/track?error=1&id=${encodeURIComponent(value.slice(0, 40))}`);
+    return localRedirect(isObjectId(value) ? `/orders/${value}` : `/orders/track?error=1&id=${encodeURIComponent(value.slice(0, 40))}`);
   }
 
   return (

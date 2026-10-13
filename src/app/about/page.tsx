@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { ArrowRight, Gamepad2, Mic2, Music4, SlidersHorizontal } from 'lucide-react';
 import { Reveal } from '@/components/ui';
-import { getT } from '@/i18n/server';
+import { getT, localizedMetadata } from '@/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'About Us',
-  description: 'Level Up TN was founded by audiophiles who believe exceptional sound should be accessible to everyone in Tunisia.',
-  alternates: { canonical: '/about' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('/about', {
+    en: { title: 'About Us', description: "Level Up TN was founded by audiophiles who believe exceptional sound should be accessible to everyone in Tunisia." },
+    fr: { title: "À propos", description: "Level Up TN a été fondé par des audiophiles convaincus qu'un son exceptionnel doit être accessible à tous en Tunisie." },
+  });
+}
 
 export default async function AboutPage() {
   const t = await getT();

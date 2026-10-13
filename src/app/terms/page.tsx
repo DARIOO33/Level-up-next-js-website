@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { LegalPage } from '@/components/content/LegalPage';
-import { getT } from '@/i18n/server';
+import { getT, localizedMetadata } from '@/i18n/server';
 
-export const metadata: Metadata = { title: 'Terms of Service', description: 'The terms that govern your use of Level Up TN and any purchases you make.', alternates: { canonical: '/terms' } };
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('/terms', {
+    en: { title: 'Terms of Service', description: "The terms that govern your use of Level Up TN and any purchases you make." },
+    fr: { title: "Conditions d'utilisation", description: "Les conditions qui régissent votre utilisation de Level Up TN et vos achats." },
+  });
+}
 
 const link = 'font-semibold text-brand-600 hover:underline dark:text-brand-300';
 

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { toast } from 'sonner';
 import { GitCompareArrows, ShoppingBag, X } from 'lucide-react';
 import { EmptyState, Equalizer } from '@/components/ui';

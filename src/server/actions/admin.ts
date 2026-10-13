@@ -142,42 +142,28 @@ export async function updateProduct(param: string, input: ProductInput, notifyWa
     });
     if (!updated) return fail('Product not found');
 
-    // Restock emails, only when the admin opted in.
-    const restocked = variants
-      .filter((v) => v.stock > 0)
-      .map((v) => {
-        const byTitle = oldByTitle.get(v.title.trim().toLowerCase());
-        const oldStock = oldById.has(v.id) ? oldById.get(v.id) : byTitle?.stock;
-        return oldStock === 0 ? { variant: v, oldId: oldById.has(v.id) ? v.id : byTitle?.id } : null;
-      })
-      .filter((x): x is NonNullable<typeof x> => Boolean(x));
+    // Restock emails, only when the admin opted in. Customers watch the product as a whole,
+    // so everyone waiting hears about any variant that went from 0 back to being available.
+    const restocked = variants.filter((v) => {
+      if (v.stock <= 0) return false;
+      const oldStock = oldById.has(v.id) ? oldById.get(v.id) : oldByTitle.get(v.title.trim().toLowerCase())?.stock;
+      return oldStock === 0;
+    });
 
-    const watchers: any[] = current.stockWatchers ?? [];
-    if (notifyWatchers && restocked.length && watchers.length) {
-      const notified = new Set<string>();
-      for (const watcher of watchers) {
-        const target = watcher.variantId
-          ? restocked.find((r) => r.variant.id === watcher.variantId || r.oldId === watcher.variantId)
-          : restocked[0];
-        if (!target) continue;
-        const user = await getUserRow(String(watcher.userId));
+    const watcherIds = watcherUserIds(current);
+    if (notifyWatchers && restocked.length && watcherIds.length) {
+      for (const userId of watcherIds) {
+        const user = await getUserRow(userId);
         if (!user) continue;
         await sendRestockEmail({
           to: user.email,
           name: user.name,
           productName: data.name,
-          variantTitle: target.variant.title,
+          variantTitle: restocked.map((v) => v.title).join(' · '),
           productPath: updated.slug || productId,
         });
-        notified.add(String(watcher._id));
       }
-      if (notified.size) {
-        await db.orm.products.where({ _id: productId }).update({
-          stockWatchers: watchers
-            .filter((w) => !notified.has(String(w._id)))
-            .map((w) => ({ _id: newId(String(w._id)), userId: String(w.userId), variantId: w.variantId ?? null })),
-        });
-      }
+      await db.orm.products.where({ _id: productId }).update({ stockWatchers: [] });
     }
 
     await logActivity(admin.name, 'Admin Action', `Updated product: "${data.name}"${notifyWatchers ? ' — watchers notified' : ''}`);
@@ -198,25 +184,21 @@ export async function deleteProduct(param: string): Promise<ActionResult> {
   });
 }
 
-export type WatcherSummary = { totalWatchers: number; outOfStockWithWatchers: { variantId: string; variantTitle: string; watcherCount: number }[] };
+/** One entry per customer, whatever variant an older record may still mention. */
+const watcherUserIds = (product: any): string[] => [...new Set<string>((product.stockWatchers ?? []).map((w: any) => String(w.userId)))];
 
-/** Per-variant watcher counts for out-of-stock variants. Counts only — no personal data. */
+export type WatcherSummary = { totalWatchers: number; outOfStockVariantIds: string[] };
+
+/** How many customers wait for this product, and which variants are out of stock. Counts only — no personal data. */
 export async function getWatchersSummary(param: string): Promise<ActionResult<WatcherSummary>> {
   return run(async () => {
     await requireAdmin();
     const product = await findProductRow(param);
     if (!product) return fail('Product not found');
-    const watchers: any[] = product.stockWatchers ?? [];
-    const general = watchers.filter((w) => !w.variantId).length;
-    const outOfStockWithWatchers = (product.variants ?? [])
-      .filter((v: any) => Number(v.stock) === 0)
-      .map((v: any) => ({
-        variantId: String(v._id),
-        variantTitle: v.title as string,
-        watcherCount: watchers.filter((w) => w.variantId === String(v._id)).length + general,
-      }))
-      .filter((v: { watcherCount: number }) => v.watcherCount > 0);
-    return ok({ totalWatchers: watchers.length, outOfStockWithWatchers });
+    return ok({
+      totalWatchers: watcherUserIds(product).length,
+      outOfStockVariantIds: (product.variants ?? []).filter((v: any) => Number(v.stock) === 0).map((v: any) => String(v._id)),
+    });
   });
 }
 

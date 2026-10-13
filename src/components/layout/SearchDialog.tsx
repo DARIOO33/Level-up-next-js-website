@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, CornerDownLeft, Search } from 'lucide-react';
 import { getSearchIndex } from '@/server/actions/catalog';
-import { useT } from '@/i18n/client';
+import { useLocalePath, useT } from '@/i18n/client';
 import type { Product } from '@/lib/types';
 import { cn, formatPrice, img, minPrice, productPath } from '@/lib/utils';
 import { Equalizer, Modal } from '../ui';
@@ -15,6 +15,7 @@ let indexCache: Product[] | null = null;
 export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT();
   const router = useRouter();
+  const to = useLocalePath();
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState<Product[] | null>(indexCache);
   const [active, setActive] = useState(0);
@@ -48,7 +49,7 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
 
   const go = (href: string) => {
     onClose();
-    router.push(href);
+    router.push(to(href));
   };
 
   return (

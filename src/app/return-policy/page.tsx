@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { ArrowRight, Clock, PackageCheck, PackageX, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
-import { getT } from '@/i18n/server';
-import { SITE_URL } from '@/lib/site';
+import { getT, localizedMetadata } from '@/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Return Policy',
-  description: 'Simple, transparent returns for all IEM orders in Tunisia. 15-day return window, free replacement for defects and wrong items.',
-  alternates: { canonical: '/return-policy' },
-  openGraph: { title: 'Return Policy | Level Up TN', url: `${SITE_URL}/return-policy`, type: 'article' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('/return-policy', {
+    en: { title: 'Return Policy', description: "Simple, transparent returns for all IEM orders in Tunisia. 15-day return window, free replacement for defects and wrong items." },
+    fr: { title: "Politique de retour", description: "Des retours simples et transparents pour toutes les commandes d'IEM en Tunisie. Retour sous 15 jours, remplacement gratuit en cas de défaut ou d'erreur d'article." },
+  });
+}
 
 const CONDITION_ICONS = [PackageX, RotateCcw, PackageCheck];
 const NOTE_ICONS = [ShieldCheck, Truck, Clock];

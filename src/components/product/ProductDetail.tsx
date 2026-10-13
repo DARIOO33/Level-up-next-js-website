@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useTransition } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { toast } from 'sonner';
 import { BadgeCheck, Banknote, Bell, BellRing, Check, GitCompareArrows, Heart, Minus, Plus, RotateCcw, Share2, ShoppingBag, Truck } from 'lucide-react';
 import { getNotifyStatus, toggleNotify } from '@/server/actions/account';
@@ -41,16 +41,17 @@ export function ProductDetail({ product, reviews, reviewCount, reviewAvg }: { pr
 
   useEffect(() => pushRecent(product.id), [product.id, pushRecent]);
 
-  // Is this customer already waiting for this variant?
+  // Is this customer already waiting for this product? (One alert covers every variant.)
+  const anyOutOfStock = product.variants.some((v) => v.stock <= 0);
   useEffect(() => {
     setWatching(null);
-    if (!user || !variant || variant.stock > 0) return;
+    if (!user || !anyOutOfStock) return;
     let alive = true;
-    getNotifyStatus(key, variant.id).then((r) => alive && setWatching(r.ok ? r.data.isWatching : false));
+    getNotifyStatus(key).then((r) => alive && setWatching(r.ok ? r.data.isWatching : false));
     return () => {
       alive = false;
     };
-  }, [user, key, variant]);
+  }, [user, key, anyOutOfStock]);
 
   const add = () => {
     if (soldOut) return;
@@ -63,7 +64,7 @@ export function ProductDetail({ product, reviews, reviewCount, reviewAvg }: { pr
   const notify = () => {
     if (!user) return toast.error(t.ui.product.login_to_notify);
     startNotify(async () => {
-      const result = await toggleNotify(key, variant?.id);
+      const result = await toggleNotify(key);
       if (!result.ok) return void toast.error(result.message);
       setWatching(result.data.isWatching);
       toast.success(result.message ?? '');

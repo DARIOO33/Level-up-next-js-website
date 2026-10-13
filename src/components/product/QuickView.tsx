@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { toast } from 'sonner';
 import { ArrowRight, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { fill } from '@/i18n';

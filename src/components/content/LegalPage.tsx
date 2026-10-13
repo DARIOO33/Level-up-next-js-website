@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/Link';
 import type { ReactNode } from 'react';
 
 type Section = { title: string; body: string[]; link?: { label: string; href: string } };

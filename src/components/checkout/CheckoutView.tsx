@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Banknote, CheckCircle2, MailCheck, MapPin, PackageX, ShoppingBag, Tag, UserRound, X } from 'lucide-react';

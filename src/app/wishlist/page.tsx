@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import Link from '@/components/Link';
 import { Heart } from 'lucide-react';
 import { ProductGrid } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui';
 import { plural } from '@/i18n';
-import { getT } from '@/i18n/server';
+import { getT, localRedirect } from '@/i18n/server';
 import { getProductsByIds, getWishlistIds } from '@/server/data';
 import { getSessionUser } from '@/server/session';
 
@@ -13,7 +12,7 @@ export const metadata: Metadata = { title: 'My Wishlist', robots: { index: false
 
 export default async function WishlistPage() {
   const user = await getSessionUser();
-  if (!user) redirect('/login?next=/wishlist');
+  if (!user) return localRedirect('/login?next=/wishlist');
   const [t, products] = await Promise.all([getT(), getWishlistIds(user.id).then(getProductsByIds)]);
 
   return (

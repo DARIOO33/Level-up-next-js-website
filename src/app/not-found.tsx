@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { getT } from '@/i18n/server';
 
 export default async function NotFound() {

@@ -2,15 +2,16 @@ import type { Metadata } from 'next';
 import { MessageSquareQuote } from 'lucide-react';
 import { EmptyState, Stars } from '@/components/ui';
 import { fill } from '@/i18n';
-import { getLocale, getT } from '@/i18n/server';
+import { getLocale, getT, localizedMetadata } from '@/i18n/server';
 import { formatDate } from '@/lib/utils';
 import { getApprovedReviews } from '@/server/data';
 
-export const metadata: Metadata = {
-  title: 'Customer Reviews',
-  description: 'Real reviews from Level Up TN customers across Tunisia — IEMs, delivery and service.',
-  alternates: { canonical: '/reviews' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('/reviews', {
+    en: { title: 'Customer Reviews', description: "Real reviews from Level Up TN customers across Tunisia — IEMs, delivery and service." },
+    fr: { title: "Avis clients", description: "Les vrais avis des clients Level Up TN partout en Tunisie — IEM, livraison et service." },
+  });
+}
 
 export default async function ReviewsPage() {
   const [t, lang, all] = await Promise.all([getT(), getLocale(), getApprovedReviews()]);

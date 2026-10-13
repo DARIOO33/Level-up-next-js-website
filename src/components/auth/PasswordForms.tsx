@@ -1,12 +1,12 @@
 'use client';
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, CheckCircle2, KeyRound, MailCheck } from 'lucide-react';
 import { Field, Spinner } from '@/components/ui';
 import { authClient } from '@/lib/auth-client';
-import { useT } from '@/i18n/client';
+import { useLocalePath, useT } from '@/i18n/client';
 import { EMAIL_RE } from '@/lib/utils';
 
 export function ForgotPassword() {
@@ -54,6 +54,7 @@ export function ForgotPassword() {
 export function ResetPassword({ token }: { token: string }) {
   const t = useT();
   const router = useRouter();
+  const to = useLocalePath();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [done, setDone] = useState(false);
@@ -66,7 +67,7 @@ export function ResetPassword({ token }: { token: string }) {
       const { error } = await authClient.resetPassword({ newPassword: password, token });
       if (error) return void toast.error(error.message ?? t.common.error);
       setDone(true);
-      setTimeout(() => router.push('/login'), 2200);
+      setTimeout(() => router.push(to('/login')), 2200);
     });
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { RotateCcw, TriangleAlert } from 'lucide-react';
 import { useT } from '@/i18n/client';
 
