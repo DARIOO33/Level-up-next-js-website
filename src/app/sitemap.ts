@@ -8,10 +8,13 @@ export const dynamic = 'force-dynamic';
 
 type Entry = MetadataRoute.Sitemap[number];
 
+/** Next writes these values into the XML as-is, so a raw `&` (common in image URLs) breaks the whole file. */
+const xml = (value: string) => value.replace(/&(?!(?:amp|lt|gt|quot|apos);)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 /** Every page exists twice — English at the bare path, French under /fr — and each entry names both versions. */
 function bilingual(path: string, rest: Omit<Entry, 'url' | 'alternates'>): Entry[] {
-  const en = `${SITE_URL}${path}`;
-  const fr = `${SITE_URL}${localizePath(path || '/', 'fr')}`;
+  const en = xml(`${SITE_URL}${path}`);
+  const fr = xml(`${SITE_URL}${localizePath(path || '/', 'fr')}`);
   const alternates = { languages: { en, fr, 'x-default': en } };
   return [{ url: en, ...rest, alternates }, { url: fr, ...rest, alternates }];
 }
@@ -36,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...products.flatMap((p) =>
       bilingual(`/product/${p.slug || p.id}`, {
         lastModified: p.updatedAt || p.createdAt ? new Date((p.updatedAt || p.createdAt)!) : undefined,
-        images: p.images.filter((src) => src.startsWith('http')).slice(0, 5),
+        images: p.images.filter((src) => src.startsWith('http')).slice(0, 5).map(xml),
         changeFrequency: 'weekly',
         priority: p.featured ? 0.9 : 0.8,
       }),
