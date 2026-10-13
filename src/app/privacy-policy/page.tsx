@@ -1,0 +1,23 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { LegalPage } from '@/components/content/LegalPage';
+import { getT } from '@/i18n/server';
+
+export const metadata: Metadata = { title: 'Privacy Policy', description: 'How Level Up TN collects, uses and protects your personal data.', alternates: { canonical: '/privacy-policy' } };
+
+const link = 'font-semibold text-brand-600 hover:underline dark:text-brand-300';
+
+export default async function PrivacyPolicyPage() {
+  const t = await getT();
+  const p = t.privacy_policy;
+  return (
+    <LegalPage
+      tag={p.tag}
+      title={p.title}
+      updated={p.last_updated}
+      intro={p.intro}
+      sections={p.sections}
+      footer={<>{p.questions} <Link href="/contact" className={link}>{p.contact_link}</Link> · {p.see_also} <Link href="/return-policy" className={link}>{p.return_policy_link}</Link></>}
+    />
+  );
+}

@@ -1,0 +1,217 @@
+// use prisma-8
+//
+// Level Up TN — data contract.
+//
+// Every model maps 1:1 onto the collection and field names the old Mongoose
+// backend wrote, so existing documents keep working untouched:
+//   - collection names are Mongoose's pluralised names (@@map)
+//   - `id` is the document `_id`
+//   - embedded sub-documents (`type` blocks) keep their own `_id`
+//   - anything Mongoose treated as optional is optional here too, because old
+//     documents may not carry the field at all
+// Do NOT run `prisma db init` against the production database: the app only
+// needs `prisma contract emit` (types). MongoDB is schemaless and the existing
+// Mongoose indexes are left exactly as they are.
+
+// ── Products ────────────────────────────────────────────────────────────────
+
+type Variant {
+  _id   ObjectId
+  title String
+  price Double
+  stock Double
+  image String
+}
+
+type StockWatcher {
+  _id       ObjectId
+  userId    ObjectId
+  variantId String?
+}
+
+model Product {
+  id             ObjectId             @id @map("_id")
+  slug           String?
+  name           String
+  description    String?
+  featured       Bool?
+  category       String
+  subCategory    String?
+  images         String[]
+  variants       Variant[]
+  specifications Json?
+  stockWatchers  StockWatcher[]
+  createdAt      temporal.createdAt()
+  updatedAt      temporal.updatedAt()
+  @@map("products")
+}
+
+// ── Users ───────────────────────────────────────────────────────────────────
+
+type Notification {
+  _id       ObjectId
+  title     String
+  message   String
+  type      String?
+  isRead    Bool?
+  link      String?
+  createdAt Date?
+  updatedAt Date?
+}
+
+type ShippingAddress {
+  _id         ObjectId
+  label       String?
+  fullname    String?
+  phone       String?
+  address     String?
+  governorate String?
+  city        String?
+  postalCode  String?
+  isDefault   Bool?
+}
+
+model User {
+  id                ObjectId             @id @map("_id")
+  name              String
+  email             String               @unique
+  phoneNumber       String?
+  /// Legacy bcrypt hash written by the old backend. Better Auth keeps its own
+  /// copy in `accounts`; this field is only read to migrate old users.
+  password          String?
+  googleId          String?
+  avatar            String?
+  authProvider      String?
+  passwordChangedAt Date?
+  role              String?
+  orders            ObjectId[]
+  wishlist          ObjectId[]
+  notifications     Notification[]
+  shippingAddresses ShippingAddress[]
+  tokenVersion      Double?
+  /// Added by Better Auth.
+  emailVerified     Bool?
+  createdAt         temporal.createdAt()
+  updatedAt         temporal.updatedAt()
+  @@map("users")
+}
+
+// ── Orders ──────────────────────────────────────────────────────────────────
+
+type OrderCustomer {
+  fullname String
+  email    String
+  phone    String
+  address  String
+}
+
+type OrderItem {
+  _id          ObjectId
+  product      ObjectId
+  variantID    String
+  quantity     Double
+  productName  String
+  variantName  String
+  variantImage String?
+}
+
+model Order {
+  id          ObjectId             @id @map("_id")
+  customer    OrderCustomer
+  items       OrderItem[]
+  totalAmount Double
+  couponCode  String?
+  /// pending | processing | shipped | delivered | cancelled | returned
+  status      String
+  createdAt   temporal.createdAt()
+  updatedAt   temporal.updatedAt()
+  @@map("orders")
+}
+
+// ── Coupons ─────────────────────────────────────────────────────────────────
+
+model Coupon {
+  id             ObjectId             @id @map("_id")
+  code           String               @unique
+  /// percent | fixed
+  type           String?
+  value          Double
+  minOrderAmount Double?
+  maxUses        Double?
+  usedCount      Double
+  expiresAt      Date?
+  isActive       Bool?
+  createdAt      temporal.createdAt()
+  updatedAt      temporal.updatedAt()
+  @@map("coupons")
+}
+
+// ── Activity log ────────────────────────────────────────────────────────────
+
+model Activity {
+  id        ObjectId             @id @map("_id")
+  user      String
+  /// "Admin Action" | "User Action"
+  label     String
+  content   String
+  createdAt temporal.createdAt()
+  updatedAt temporal.updatedAt()
+  @@map("activities")
+}
+
+// ── Contact messages ────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id        ObjectId             @id @map("_id")
+  name      String
+  email     String
+  message   String
+  isRead    Bool?
+  createdAt temporal.createdAt()
+  updatedAt temporal.updatedAt()
+  @@map("contactmessages")
+}
+
+// ── Reviews ─────────────────────────────────────────────────────────────────
+
+model StoreReview {
+  id          ObjectId             @id @map("_id")
+  name        String?
+  showName    Bool?
+  rating      Double?
+  comment     String?
+  /// website | instagram | tiktok | facebook | manual
+  source      String?
+  productName String?
+  productId   ObjectId?
+  orderId     ObjectId?
+  /// One-time token for the public review form; null once submitted.
+  token       String?
+  isApproved  Bool?
+  createdAt   temporal.createdAt()
+  updatedAt   temporal.updatedAt()
+  @@map("storereviews")
+}
+
+// ── Newsletter ──────────────────────────────────────────────────────────────
+
+model Subscriber {
+  id         ObjectId @id @map("_id")
+  email      String   @unique
+  otp        String?
+  otpExpires Date?
+  isVerified Bool?
+  @@map("subscribers")
+}
+
+// ── Site settings (single document) ─────────────────────────────────────────
+
+model SiteSettings {
+  id             ObjectId             @id @map("_id")
+  brands         String[]
+  deliveryPaused Bool?
+  deliveryNotice String?
+  createdAt      temporal.createdAt()
+  updatedAt      temporal.updatedAt()
+  @@map("sitesettings")
+}
