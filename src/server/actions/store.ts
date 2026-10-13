@@ -260,6 +260,8 @@ export async function submitReviewByToken(
     if (comment.length > 500) return fail('Comment must be 500 characters or fewer');
     if (!token || token.length < 16) return fail('This review link is invalid or has already been used.');
 
+    // Used reviews store `token: null`, so anything but a real token string must never reach the lookup.
+    if (typeof token !== 'string' || token.length < 16) return fail('This review link is invalid or has already been used.');
     const row = await db.orm.storereviews.where({ token }).first();
     if (!row) return fail('This review link is invalid or has already been used.');
 

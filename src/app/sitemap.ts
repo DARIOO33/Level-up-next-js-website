@@ -6,8 +6,8 @@ import { getProducts } from '@/server/data';
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
-  const page = (path: string, priority: number, changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly') => ({ url: `${SITE_URL}${path}`, lastModified: now, changeFrequency, priority });
+  // No `lastModified` on these: a date that changes on every request teaches Google to ignore the field.
+  const page = (path: string, priority: number, changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly') => ({ url: `${SITE_URL}${path}`, changeFrequency, priority });
 
   const products = await getProducts().catch(() => []);
   return [
@@ -24,7 +24,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/terms', 0.3, 'yearly'),
     ...products.map((p) => ({
       url: `${SITE_URL}/product/${p.slug || p.id}`,
-      lastModified: p.createdAt ? new Date(p.createdAt) : now,
+      lastModified: p.updatedAt || p.createdAt ? new Date((p.updatedAt || p.createdAt)!) : undefined,
+      images: p.images.filter((src) => src.startsWith('http')).slice(0, 5),
       changeFrequency: 'weekly' as const,
       priority: p.featured ? 0.9 : 0.8,
     })),

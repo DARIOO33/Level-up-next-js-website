@@ -12,6 +12,7 @@ export type Product = {
   variants: Variant[];
   specifications: Record<string, string>;
   createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'] as const;

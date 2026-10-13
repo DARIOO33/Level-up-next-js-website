@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps<'/product/[slug]'>)
   const segment = product.slug || product.id;
   const price = minPrice(product);
   const brand = product.category === 'iems' ? product.subCategory : null;
-  const title = `${product.name} — ${price} TND in Tunisia`;
+  const title = `${product.name} Tunisie — Prix ${price} TND`;
   const description = (
     product.description ||
     `Buy ${product.name} in Tunisia at Level Up TN. Authentic product, free delivery in 24–72h, cash on delivery.`

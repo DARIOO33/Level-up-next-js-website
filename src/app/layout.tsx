@@ -19,11 +19,12 @@ const bricolage = Bricolage_Grotesque({ variable: '--font-bricolage', subsets: [
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `${SITE_NAME} — Premium IEMs & Earphones in Tunisia`, template: `%s | ${SITE_NAME}` },
+  title: { default: `IEM Tunisie — KZ, 7Hz & Moondrop In-Ear Monitors | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
   description:
-    "Level Up TN is Tunisia's premier store for premium In-Ear Monitors (IEMs), earphones, and audio accessories. Shop KZ, CCA, TRN, Moondrop, 7Hz, Kinera, and more — fast delivery across Tunisia.",
+    'Buy IEMs in Tunisia (IEM Tunisie): KZ, 7Hz and Moondrop in-ear monitors for gaming and music, plus cables, ear tips and DACs. Authentic products, free delivery in 24–72h, cash on delivery.',
   keywords: [
-    'KZ', 'KZ IEM', 'KZ earphones Tunisia', 'CCA', 'TRN', 'Moondrop', '7Hz', 'Kinera',
+    'IEM', 'IEM Tunisie', 'IEMs Tunisie', 'KZ Tunisie', 'KZ IEM', 'in ear monitor', 'in ear monitor Tunisie',
+    'écouteurs intra-auriculaires Tunisie', 'écouteurs gaming Tunisie', 'KZ', 'KZ earphones Tunisia', 'CCA', 'TRN', 'Moondrop', '7Hz', 'Kinera',
     'Truthear', 'Simgot', 'Letshuoer', 'Kiwi Ears', 'Tangzu', 'BLON', 'Tin HiFi',
     'HIDIZS', 'FiiO', 'Shanling', 'IEM Tunisia', 'in-ear monitors Tunisia',
     'earphones Tunisia', 'audiophile Tunisia', 'chi-fi IEM', 'budget IEM', 'best IEM',
@@ -42,16 +43,15 @@ export const metadata: Metadata = {
     alternateLocale: ['fr_FR', 'ar_TN'],
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Premium IEMs & Earphones in Tunisia`,
-    description: 'Shop premium IEMs, earphones and audio gear in Tunisia. KZ, Moondrop, 7Hz and more. Fast delivery, best prices.',
+    title: `IEM Tunisie — KZ, 7Hz & Moondrop In-Ear Monitors | ${SITE_NAME}`,
+    description: 'IEMs and in-ear monitors in Tunisia for gamers and music lovers. KZ, 7Hz, Moondrop and more — free delivery, cash on delivery.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} — Premium IEMs & Earphones`,
-    description: "Tunisia's best source for premium IEMs, earphones and audio accessories.",
+    title: `IEM Tunisie — KZ, 7Hz & Moondrop | ${SITE_NAME}`,
+    description: 'IEMs and in-ear monitors in Tunisia for gamers and music lovers. Free delivery, cash on delivery.',
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 } },
-  alternates: { canonical: SITE_URL },
 };
 
 export const viewport: Viewport = {
@@ -67,7 +67,8 @@ const organizationSchema = {
   name: SITE_NAME,
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
-  description: 'Premium IEMs and audio accessories store in Tunisia.',
+  description: 'Online store for IEMs (in-ear monitors) and audio accessories in Tunisia.',
+  areaServed: { '@type': 'Country', name: 'Tunisia' },
   contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', availableLanguage: ['English', 'French', 'Arabic'] },
 };
 

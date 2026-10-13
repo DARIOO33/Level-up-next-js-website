@@ -68,6 +68,7 @@ export function toProduct(row: Row): Product {
     })),
     specifications: specs,
     createdAt: iso(row.createdAt),
+    updatedAt: iso(row.updatedAt),
   };
 }
 

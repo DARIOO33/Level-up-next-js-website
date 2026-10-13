@@ -17,7 +17,7 @@ export type BrandGuide = {
 };
 
 const kzMetadata: Metadata = {
-  title: 'KZ IEMs in Tunisia – Best In-Ear Monitors | Level Up TN',
+  title: { absolute: 'KZ Tunisie – KZ IEMs & In-Ear Monitors in Tunisia | Level Up TN' },
   description:
     'Buy authentic KZ IEMs in Tunisia. KZ ZEX Pro, KZ ZS10 Pro, KZ DQ6, KZ EDX Pro and more — free shipping across Tunisia in 24–48h. Shop KZ Tunisie at Level Up TN.',
   keywords: [
@@ -137,7 +137,7 @@ const kzBrand: BrandGuide = {
 };
 
 const sevenHzMetadata: Metadata = {
-  title: '7Hz IEMs in Tunisia – Best In-Ear Monitors | Level Up TN',
+  title: { absolute: '7Hz Tunisie – 7Hz IEMs & In-Ear Monitors in Tunisia | Level Up TN' },
   description:
     'Buy authentic 7Hz IEMs in Tunisia. 7Hz Timeless, Salnotes Dioko, Salnotes Zero — free shipping across Tunisia in 24–48h. Shop 7Hz Tunisie at Level Up TN.',
   keywords: [
@@ -242,7 +242,7 @@ const sevenHzBrand: BrandGuide = {
 };
 
 const moondropMetadata: Metadata = {
-  title: 'Moondrop IEMs in Tunisia – Best In-Ear Monitors | Level Up TN',
+  title: { absolute: 'Moondrop Tunisie – Moondrop IEMs & In-Ear Monitors in Tunisia | Level Up TN' },
   description:
     'Buy authentic Moondrop IEMs in Tunisia. Moondrop Aria, Starfield, Blessing 3, Variations — free shipping across Tunisia in 24–48h. Shop Moondrop Tunisie at Level Up TN.',
   keywords: [
