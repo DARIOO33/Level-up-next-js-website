@@ -26,6 +26,9 @@ export function formatDateTime(iso: string | null | undefined, locale = 'en-GB')
   return new Date(iso).toLocaleString(locale, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: TIME_ZONE });
 }
 
+/** The Tunis calendar day of a moment, as `YYYY-MM-DD` (sortable as a string). */
+export const tunisDay = (date: string | Date = new Date()) => new Date(date).toLocaleDateString('en-CA', { timeZone: TIME_ZONE });
+
 /** URL segment for a product page (slug preferred; legacy Mongo id fallback). */
 export const productPath = (p: Pick<Product, 'slug' | 'id'>) => `/product/${p.slug || p.id}`;
 

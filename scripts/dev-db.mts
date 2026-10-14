@@ -32,11 +32,13 @@ const now = Date.now();
 const daysAgo = (d: number) => new Date(now - d * 86_400_000);
 const stamp = (d: number) => ({ createdAt: daysAgo(d), updatedAt: daysAgo(d), __v: 0 });
 
-const product = (o: { name: string; slug?: string; category: string; sub: string; featured?: boolean; hue: number; desc: string; variants: [string, number, number][]; specs?: Record<string, string>; age: number }) => ({
+const product = (o: { name: string; slug?: string; category: string; sub: string; featured?: boolean; hue: number; desc: string; descFr?: string; specsFr?: Record<string, { name: string; value: string }>; variants: [string, number, number][]; specs?: Record<string, string>; age: number }) => ({
   _id: new ObjectId(),
   name: o.name,
   ...(o.slug ? { slug: o.slug } : {}),
   description: o.desc,
+  ...(o.descFr ? { descriptionFr: o.descFr } : {}),
+  ...(o.specsFr ? { specificationsFr: o.specsFr } : {}),
   featured: Boolean(o.featured),
   category: o.category,
   subCategory: o.sub,
@@ -48,7 +50,7 @@ const product = (o: { name: string; slug?: string; category: string; sub: string
 });
 
 const products = [
-  product({ name: 'KZ ZSN Pro X', slug: 'kz-zsn-pro-x', category: 'iems', sub: 'KZ', featured: true, hue: 265, age: 3, desc: 'Hybrid 1BA + 1DD IEM with an energetic V-shaped tuning. A favourite first IEM for gaming and pop.', variants: [['Black, no mic', 69, 12], ['Black, with mic', 75, 4], ['Gold, with mic', 75, 0]], specs: { Driver: '1BA + 1DD hybrid', Impedance: '25Ω', Sensitivity: '112dB', Connector: '0.75mm 2-pin', Cable: '1.2m silver-plated' } }),
+  product({ name: 'KZ ZSN Pro X', slug: 'kz-zsn-pro-x', category: 'iems', sub: 'KZ', featured: true, hue: 265, age: 3, desc: 'Hybrid 1BA + 1DD IEM with an energetic V-shaped tuning. A favourite first IEM for gaming and pop.', descFr: 'IEM hybride 1BA + 1DD au son en V énergique. Un premier IEM très apprécié pour le gaming et la pop.', specsFr: { Driver: { name: '', value: 'Hybride 1BA + 1DD' }, Cable: { name: '', value: '1,2 m plaqué argent' } }, variants: [['Black, no mic', 69, 12], ['Black, with mic', 75, 4], ['Gold, with mic', 75, 0]], specs: { Driver: '1BA + 1DD hybrid', Impedance: '25Ω', Sensitivity: '112dB', Connector: '0.75mm 2-pin', Cable: '1.2m silver-plated' } }),
   product({ name: '7Hz x Crinacle Zero: 2', slug: '7hz-zero-2', category: 'iems', sub: '7HZ', featured: true, hue: 170, age: 6, desc: 'Refined collaboration IEM tuned for smooth, natural sound with improved bass response.', variants: [['Silver', 159, 6], ['Blue', 159, 2], ['Orange', 159, 3]], specs: { Driver: '10mm dynamic', Impedance: '32Ω', Sensitivity: '108dB', Connector: '0.78mm 2-pin', Signature: 'Neutral-warm' } }),
   product({ name: 'Moondrop Chu II', slug: 'moondrop-chu-2', category: 'iems', sub: 'Moondrop', featured: true, hue: 300, age: 9, desc: 'Budget benchmark with detachable cable and Moondrop’s VDSF target tuning.', variants: [['Standard', 95, 9]], specs: { Driver: '10mm Al-Mg dynamic', Impedance: '18Ω', Sensitivity: '119dB', Connector: '0.78mm 2-pin', Signature: 'Neutral' } }),
   product({ name: 'Simgot EW200', slug: 'simgot-ew200', category: 'iems', sub: 'Simgot', featured: true, hue: 30, age: 12, desc: 'Full-metal shell and SCP diaphragm — bright, detailed and wide.', variants: [['Mirror silver', 189, 5]], specs: { Driver: '10mm SCP dynamic', Impedance: '16Ω', Sensitivity: '126dB', Connector: '0.78mm 2-pin', Signature: 'Bright-neutral' } }),

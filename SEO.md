@@ -102,9 +102,12 @@ Every page exists at two addresses: English at the plain URL and French under `/
 - In Search Console, request indexing for `https://www.levelup-store.tn/fr`,
   `/fr/shop?cat=iems` and `/fr/brands/kz` as well (section 3).
 - In **Performance**, add the filter **Page → URLs containing `/fr`** to see how the French pages do on their own.
-- Product descriptions come from what you type in the admin panel, in one language only. The French product
-  pages therefore show a French interface around the same description. Writing descriptions in French (or in
-  both languages in the same text) helps the French pages most.
+- Each product has an English and a French description in the admin panel (Products → Edit). The French one is
+  what `/fr/product/...` shows, in the page text, the Google snippet and the structured data. Left empty, the
+  French page falls back to the English text — then it looks like a copy of the English page and Google often
+  indexes only one of the two. Fill in the French description for every product, starting with the best sellers.
+- Specs work the same way: under each spec there is a French name and value. Common names (Driver, Impedance,
+  Sensitivity, Cable, …) are translated automatically, so usually only values with words in them need French.
 - The three brand guides are fully translated in `src/lib/brands-fr.ts`. If you edit a guide in
   `src/lib/brands.ts`, update the French one too.
 

@@ -55,7 +55,7 @@ export function ShopClient({ products, brands }: { products: Product[]; brands: 
     if (sub) list = list.filter((p) => p.subCategory === sub);
     if (brand) list = list.filter((p) => matchesBrand(p, brand));
     const q = search.trim().toLowerCase();
-    if (q) list = list.filter((p) => `${p.name} ${p.subCategory ?? ''} ${p.description}`.toLowerCase().includes(q));
+    if (q) list = list.filter((p) => `${p.name} ${p.subCategory ?? ''} ${p.description} ${p.descriptionFr}`.toLowerCase().includes(q));
     if (onlyInStock) list = list.filter(inStock);
 
     return [...list].sort((a, b) => {

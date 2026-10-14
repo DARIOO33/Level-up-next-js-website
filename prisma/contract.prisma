@@ -34,12 +34,17 @@ model Product {
   slug           String?
   name           String
   description    String?
+  /// French description for the /fr product page; empty falls back to `description`.
+  descriptionFr  String?
   featured       Bool?
   category       String
   subCategory    String?
   images         String[]
   variants       Variant[]
   specifications Json?
+  /// French specs, keyed by the English spec name: { "Driver": { "name": "Transducteur", "value": "…" } }.
+  /// Either part may be empty, which falls back to the English one.
+  specificationsFr Json?
   stockWatchers  StockWatcher[]
   createdAt      temporal.createdAt()
   updatedAt      temporal.updatedAt()

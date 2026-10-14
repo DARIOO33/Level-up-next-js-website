@@ -6,6 +6,7 @@ import { BadgeCheck, Banknote, Bell, BellRing, Check, GitCompareArrows, Heart, M
 import { getNotifyStatus, toggleNotify } from '@/server/actions/account';
 import { fill, plural } from '@/i18n';
 import { useLocale, useT } from '@/i18n/client';
+import { productCopy } from '@/lib/product-copy';
 import type { Product, Review } from '@/lib/types';
 import { cn, formatDate, formatPrice, img } from '@/lib/utils';
 import { useCartStore, useCompareStore, useHydrated, useRecentStore } from '@/store';
@@ -36,7 +37,7 @@ export function ProductDetail({ product, reviews, reviewCount, reviewAvg }: { pr
   const image = activeImage ?? variant?.image ?? gallery[0];
   const saved = wishlist.has(product.id);
   const comparing = hydrated && compareIds.includes(product.id);
-  const specs = Object.entries(product.specifications);
+  const { description, specs } = productCopy(product, locale);
   const key = product.slug || product.id;
 
   useEffect(() => pushRecent(product.id), [product.id, pushRecent]);
@@ -205,10 +206,10 @@ export function ProductDetail({ product, reviews, reviewCount, reviewAvg }: { pr
             ))}
           </ul>
 
-          {product.description && (
+          {description && (
             <section className="mt-10">
               <h2 className="label">{t.ui.product.description}</h2>
-              <p className="whitespace-pre-line text-[15px] leading-relaxed text-soft">{product.description}</p>
+              <p className="whitespace-pre-line text-[15px] leading-relaxed text-soft">{description}</p>
             </section>
           )}
 
@@ -216,8 +217,8 @@ export function ProductDetail({ product, reviews, reviewCount, reviewAvg }: { pr
             <section className="mt-10">
               <h2 className="label">{t.shop.specs}</h2>
               <dl className="overflow-hidden rounded-3xl border border-line">
-                {specs.map(([name, value], i) => (
-                  <div key={name} className={cn('grid grid-cols-[minmax(7rem,38%)_1fr] gap-4 px-5 py-3.5 text-sm', i % 2 === 1 && 'bg-raised/60')}>
+                {specs.map(([key, name, value], i) => (
+                  <div key={key} className={cn('grid grid-cols-[minmax(7rem,38%)_1fr] gap-4 px-5 py-3.5 text-sm', i % 2 === 1 && 'bg-raised/60')}>
                     <dt className="font-mono text-[11px] uppercase tracking-wider text-faint">{name}</dt>
                     <dd className="font-medium">{value}</dd>
                   </div>

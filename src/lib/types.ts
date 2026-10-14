@@ -5,15 +5,20 @@ export type Product = {
   slug: string | null;
   name: string;
   description: string;
+  /** Empty when no French text was written; the French site then shows `description`. */
+  descriptionFr: string;
   featured: boolean;
   category: string;
   subCategory: string | null;
   images: string[];
   variants: Variant[];
   specifications: Record<string, string>;
+  /** Keyed by the English spec name; an empty `name` or `value` falls back to the English one. */
+  specificationsFr: Record<string, SpecFr>;
   createdAt: string | null;
   updatedAt: string | null;
 };
+export type SpecFr = { name: string; value: string };
 
 export const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];

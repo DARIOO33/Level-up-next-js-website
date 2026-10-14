@@ -14,6 +14,7 @@ import type {
   Product,
   Review,
   Settings,
+  SpecFr,
 } from '@/lib/types';
 
 /**
@@ -50,11 +51,18 @@ export function toProduct(row: Row): Product {
   if (row.specifications && typeof row.specifications === 'object') {
     for (const [key, value] of Object.entries(row.specifications)) specs[key] = String(value ?? '');
   }
+  const specsFr: Record<string, SpecFr> = {};
+  if (row.specificationsFr && typeof row.specificationsFr === 'object') {
+    for (const [key, value] of Object.entries(row.specificationsFr as Record<string, Row>)) {
+      if (key in specs) specsFr[key] = { name: String(value?.name ?? ''), value: String(value?.value ?? '') };
+    }
+  }
   return {
     id: id(row._id),
     slug: row.slug || null,
     name: row.name ?? '',
     description: row.description ?? '',
+    descriptionFr: row.descriptionFr ?? '',
     featured: row.featured === true,
     category: row.category ?? 'iems',
     subCategory: row.subCategory || null,
@@ -67,6 +75,7 @@ export function toProduct(row: Row): Product {
       image: v.image ?? '',
     })),
     specifications: specs,
+    specificationsFr: specsFr,
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
   };

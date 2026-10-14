@@ -6,8 +6,9 @@ import { GitCompareArrows, ShoppingBag, X } from 'lucide-react';
 import { EmptyState, Equalizer } from '@/components/ui';
 import { getProductsForIds } from '@/server/actions/catalog';
 import { fill } from '@/i18n';
-import { useT } from '@/i18n/client';
+import { useLocale, useT } from '@/i18n/client';
 import { CATEGORY_LABELS } from '@/lib/constants';
+import { productCopy } from '@/lib/product-copy';
 import type { Product } from '@/lib/types';
 import { cn, formatPrice, img, inStock, maxPrice, minPrice, productPath, totalStock } from '@/lib/utils';
 import { useCartStore, useCompareStore, useHydrated } from '@/store';
@@ -15,6 +16,7 @@ import { useCartStore, useCompareStore, useHydrated } from '@/store';
 /** Spec-for-spec table for up to three products picked with the compare button. */
 export function CompareView() {
   const t = useT();
+  const locale = useLocale();
   const hydrated = useHydrated();
   const { ids, remove, clear } = useCompareStore();
   const addItem = useCartStore((s) => s.addItem);
@@ -30,8 +32,20 @@ export function CompareView() {
     };
   }, [ids, hydrated]);
 
-  // Every spec key any of the products has, in first-seen order.
-  const specKeys = useMemo(() => [...new Set((products ?? []).flatMap((p) => Object.keys(p.specifications)))], [products]);
+  // Every spec any of the products has, in first-seen order, keyed by its English name so the rows line up.
+  const specRows = useMemo(() => {
+    const labels = new Map<string, string>();
+    const values = new Map<string, Map<string, string>>();
+    for (const p of products ?? []) {
+      const byKey = new Map<string, string>();
+      for (const [key, name, value] of productCopy(p, locale).specs) {
+        if (!labels.has(key)) labels.set(key, name);
+        byKey.set(key, value);
+      }
+      values.set(p.id, byKey);
+    }
+    return [...labels].map(([key, label]) => ({ key, label, valueOf: (p: Product) => values.get(p.id)?.get(key) }));
+  }, [products, locale]);
   const cheapest = products?.length ? Math.min(...products.map(minPrice)) : 0;
 
   const rows: { label: string; render: (p: Product) => React.ReactNode }[] = [
@@ -47,7 +61,7 @@ export function CompareView() {
     { label: t.ui.compare.category, render: (p) => CATEGORY_LABELS[p.category] ?? p.category },
     { label: t.ui.compare.brand, render: (p) => p.subCategory ?? '—' },
     { label: t.ui.compare.variants, render: (p) => p.variants.map((v) => v.title).join(' · ') },
-    ...specKeys.map((key) => ({ label: key, render: (p: Product) => p.specifications[key] ?? <span className="text-faint">—</span> })),
+    ...specRows.map(({ label, valueOf }) => ({ label, render: (p: Product) => valueOf(p) ?? <span className="text-faint">—</span> })),
   ];
 
   return (

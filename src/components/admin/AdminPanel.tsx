@@ -1,15 +1,15 @@
 'use client';
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
-  Activity as ActivityIcon, AlertTriangle, Clock, DollarSign, Eye, EyeOff, LayoutDashboard, Mail,
-  MessageSquare, Package, Settings as SettingsIcon, ShoppingBag, Star, Tag, Users,
+  Activity as ActivityIcon, AlertTriangle, CalendarRange, Clock, DollarSign, Eye, EyeOff, LayoutDashboard, Mail,
+  MessageSquare, Package, Settings as SettingsIcon, ShoppingBag, Star, Tag, User, Users,
 } from 'lucide-react';
 import { Modal, StatusBadge } from '@/components/ui';
 import { updateOrderStatus } from '@/server/actions/admin';
 import { ORDER_STATUSES, type Activity, type AdminUser, type ContactMessage, type Coupon, type Order, type OrderStatus, type Product, type Review, type SessionUser, type Settings } from '@/lib/types';
-import { cn, formatDateTime, formatPrice, img, shortId, totalStock } from '@/lib/utils';
+import { cn, formatDate, formatDateTime, formatPrice, img, shortId, totalStock, tunisDay } from '@/lib/utils';
 import { ActivityTab, CouponsTab, MarketingTab, MessagesTab, ReviewsTab, SettingsTab, UsersTab } from './AdminTabs';
 import { ProductsTab } from './ProductsTab';
 import { Confirm, PAGE_SIZE, Pager, Select, Table, Td, Toolbar, usePage } from './shared';
@@ -17,6 +17,42 @@ import { Confirm, PAGE_SIZE, Pager, Select, Table, Td, Toolbar, usePage } from '
 /** What a delivery / a returned parcel costs the shop, in TND — subtracted to show net revenue (same rule as the old dashboard). */
 const DELIVERY_COST = 9;
 const RETURN_COST = 5;
+
+/** The day the shop became Dario's alone — the "Dario only" switch hides everything before it. */
+const SOLO_SINCE = '2026-10-14';
+const SOLO_KEY = 'admin-dario-only';
+
+const PERIODS = [
+  { value: 'all', label: 'All time' },
+  { value: 'today', label: 'Today' },
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: 'month', label: 'This month' },
+  { value: 'year', label: 'This year' },
+  { value: 'custom', label: 'Custom range' },
+] as const;
+type Period = (typeof PERIODS)[number]['value'];
+
+/** `YYYY-MM-DD` shifted by `days`. */
+const addDays = (day: string, days: number) => {
+  const d = new Date(`${day}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+/** First and last day (inclusive, Tunis time) a period covers; empty = open-ended. */
+function periodBounds(period: Period, custom: { from: string; to: string }) {
+  const today = tunisDay();
+  switch (period) {
+    case 'today': return { from: today, to: today };
+    case '7d': return { from: addDays(today, -6), to: today };
+    case '30d': return { from: addDays(today, -29), to: today };
+    case 'month': return { from: `${today.slice(0, 7)}-01`, to: today };
+    case 'year': return { from: `${today.slice(0, 4)}-01-01`, to: today };
+    case 'custom': return custom;
+    default: return { from: '', to: '' };
+  }
+}
 
 const TABS = [
   { id: 'overview', label: 'Overview', Icon: LayoutDashboard },
@@ -48,11 +84,46 @@ export function AdminPanel(props: Props) {
   const { me, orders, products, reviews, messages } = props;
   const [tab, setTab] = useState<TabId>('overview');
   const [revenueVisible, setRevenueVisible] = useState(false);
+  const [period, setPeriod] = useState<Period>('all');
+  const [custom, setCustom] = useState({ from: '', to: '' });
+  const [soloOnly, setSoloOnly] = useState(false);
 
-  const delivered = orders.filter((o) => o.status === 'delivered');
-  const returned = orders.filter((o) => o.status === 'returned');
+  // The "Dario only" choice sticks between visits (read after mount so the server render matches).
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(SOLO_KEY) === '1') setSoloOnly(true);
+    } catch {}
+  }, []);
+  const toggleSolo = () => {
+    const next = !soloOnly;
+    setSoloOnly(next);
+    try {
+      localStorage.setItem(SOLO_KEY, next ? '1' : '0');
+    } catch {}
+  };
+
+  // Overview numbers only count orders inside the chosen dates. Tabs and badges always see everything.
+  const bounds = periodBounds(period, custom);
+  const from = soloOnly && SOLO_SINCE > bounds.from ? SOLO_SINCE : bounds.from;
+  const to = bounds.to;
+  const periodOrders = useMemo(
+    () =>
+      from || to
+        ? orders.filter((o) => {
+            if (!o.createdAt) return false;
+            const day = tunisDay(o.createdAt);
+            return (!from || day >= from) && (!to || day <= to);
+          })
+        : orders,
+    [orders, from, to],
+  );
+
+  const delivered = periodOrders.filter((o) => o.status === 'delivered');
+  const returned = periodOrders.filter((o) => o.status === 'returned');
   const netRevenue = delivered.reduce((sum, o) => sum + o.totalAmount, 0) - (delivered.length * DELIVERY_COST + returned.length * RETURN_COST);
   const pending = orders.filter((o) => o.status === 'pending').length;
+  const periodPending = periodOrders.filter((o) => o.status === 'pending').length;
+  const rangeLabel = from || to ? `${from ? formatDate(`${from}T12:00:00Z`) : 'Start'} → ${to ? formatDate(`${to}T12:00:00Z`) : 'today'}` : 'All time';
   const unread = messages.filter((m) => !m.isRead).length;
   const toApprove = reviews.filter((r) => !r.isApproved && r.rating != null).length;
   const lowStock = products.filter((p) => totalStock(p) <= 5).sort((a, b) => totalStock(a) - totalStock(b));
@@ -81,11 +152,35 @@ export function AdminPanel(props: Props) {
       <div className="mt-8" role="tabpanel">
         {tab === 'overview' && (
           <div className="grid grid-cols-1 gap-8">
+            <div className="grid gap-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                <Select label="Period" value={period} onChange={setPeriod} options={[...PERIODS]} />
+                {period === 'custom' && (
+                  <div className="flex items-center gap-2">
+                    <input type="date" className="input h-11 min-w-0 flex-1 sm:w-40 sm:flex-none" value={custom.from} max={custom.to || undefined} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} aria-label="From" />
+                    <span className="text-faint">→</span>
+                    <input type="date" className="input h-11 min-w-0 flex-1 sm:w-40 sm:flex-none" value={custom.to} min={custom.from || undefined} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} aria-label="To" />
+                  </div>
+                )}
+                <button
+                  onClick={toggleSolo}
+                  aria-pressed={soloOnly}
+                  title={`Only count orders from ${formatDate(`${SOLO_SINCE}T12:00:00Z`)} on`}
+                  className={cn('btn h-11 shrink-0', soloOnly ? 'btn-primary' : 'btn-outline')}
+                >
+                  <User size={15} /> Dario only
+                </button>
+              </div>
+              <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-faint">
+                <CalendarRange size={13} /> {rangeLabel}{soloOnly && ' · Dario only'}
+              </p>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { label: 'Total orders', value: String(orders.length), Icon: ShoppingBag, tone: 'text-brand-500 bg-brand-500/12' },
+                { label: 'Total orders', value: String(periodOrders.length), Icon: ShoppingBag, tone: 'text-brand-500 bg-brand-500/12' },
                 { label: 'Net revenue (TND)', value: formatPrice(Math.round(netRevenue)), Icon: DollarSign, tone: 'text-emerald-500 bg-emerald-500/12', hideable: true },
-                { label: 'Pending', value: String(pending), Icon: Clock, tone: 'text-amber-500 bg-amber-500/12' },
+                { label: 'Pending', value: String(periodPending), Icon: Clock, tone: 'text-amber-500 bg-amber-500/12' },
                 { label: 'Products', value: String(products.length), Icon: Package, tone: 'text-blue-500 bg-blue-500/12' },
               ].map(({ label, value, Icon, tone, hideable }) => (
                 <div key={label} className="card p-6">
@@ -106,7 +201,7 @@ export function AdminPanel(props: Props) {
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
               <section className="min-w-0">
                 <h2 className="display mb-4 text-2xl">Recent orders</h2>
-                <OrdersTable orders={orders.slice(0, 6)} compact />
+                <OrdersTable orders={periodOrders.slice(0, 6)} compact />
               </section>
               <section className="min-w-0">
                 <h2 className="display mb-4 flex items-center gap-2 text-2xl"><AlertTriangle size={18} className="text-amber-500" /> Low stock</h2>

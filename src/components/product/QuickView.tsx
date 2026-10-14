@@ -4,7 +4,8 @@ import Link from '@/components/Link';
 import { toast } from 'sonner';
 import { ArrowRight, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { fill } from '@/i18n';
-import { useT } from '@/i18n/client';
+import { useLocale, useT } from '@/i18n/client';
+import { productCopy } from '@/lib/product-copy';
 import type { Product } from '@/lib/types';
 import { cn, formatPrice, img, productPath } from '@/lib/utils';
 import { useCartStore } from '@/store';
@@ -12,6 +13,7 @@ import { Modal } from '../ui';
 
 export function QuickView({ product, onClose }: { product: Product; onClose: () => void }) {
   const t = useT();
+  const locale = useLocale();
   const addItem = useCartStore((s) => s.addItem);
   const openDrawer = useCartStore((s) => s.openDrawer);
   const [selected, setSelected] = useState(Math.max(0, product.variants.findIndex((v) => v.stock > 0)));
@@ -21,7 +23,8 @@ export function QuickView({ product, onClose }: { product: Product; onClose: () 
   const variant = product.variants[selected];
   const gallery = [...new Set([...product.images, ...product.variants.map((v) => v.image)].filter(Boolean))];
   const image = imageIndex >= 0 ? gallery[imageIndex] : variant?.image || gallery[0];
-  const specs = Object.entries(product.specifications).slice(0, 4);
+  const { description, specs: allSpecs } = productCopy(product, locale);
+  const specs = allSpecs.slice(0, 4);
 
   const add = () => {
     if (!variant || variant.stock === 0) return;
@@ -57,7 +60,7 @@ export function QuickView({ product, onClose }: { product: Product; onClose: () 
           <p className="price mt-4 text-3xl text-brand-600 dark:text-brand-300">
             {formatPrice(variant?.price ?? 0)} <span className="text-sm text-faint">TND</span>
           </p>
-          {product.description && <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-soft">{product.description}</p>}
+          {description && <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-soft">{description}</p>}
 
           {product.variants.length > 0 && (
             <div className="mt-6">
@@ -79,9 +82,9 @@ export function QuickView({ product, onClose }: { product: Product; onClose: () 
 
           {specs.length > 0 && (
             <dl className="mt-6 grid grid-cols-2 gap-2">
-              {specs.map(([key, value]) => (
+              {specs.map(([key, name, value]) => (
                 <div key={key} className="rounded-2xl bg-raised px-3.5 py-2.5">
-                  <dt className="font-mono text-[10px] uppercase tracking-wider text-faint">{key}</dt>
+                  <dt className="font-mono text-[10px] uppercase tracking-wider text-faint">{name}</dt>
                   <dd className="mt-0.5 truncate text-sm font-medium">{value}</dd>
                 </div>
               ))}

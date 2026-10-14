@@ -334,6 +334,13 @@
                   "kind": "scalar"
                 }
               },
+              "descriptionFr": {
+                "nullable": true,
+                "type": {
+                  "codecId": "mongo/string@1",
+                  "kind": "scalar"
+                }
+              },
               "featured": {
                 "nullable": true,
                 "type": {
@@ -366,6 +373,13 @@
                 }
               },
               "specifications": {
+                "nullable": true,
+                "type": {
+                  "codecId": "mongo/json@1",
+                  "kind": "scalar"
+                }
+              },
+              "specificationsFr": {
                 "nullable": true,
                 "type": {
                   "codecId": "mongo/json@1",
@@ -1339,6 +1353,12 @@
                         "string"
                       ]
                     },
+                    "descriptionFr": {
+                      "bsonType": [
+                        "null",
+                        "string"
+                      ]
+                    },
                     "featured": {
                       "bsonType": [
                         "null",
@@ -1361,6 +1381,18 @@
                       ]
                     },
                     "specifications": {
+                      "bsonType": [
+                        "object",
+                        "array",
+                        "string",
+                        "double",
+                        "int",
+                        "long",
+                        "bool",
+                        "null"
+                      ]
+                    },
+                    "specificationsFr": {
                       "bsonType": [
                         "object",
                         "array",
@@ -1883,7 +1915,7 @@
         "kind": "mongo-database"
       }
     },
-    "storageHash": "65a0b9dd4d4b47dfec279f5d10417d48d2ba7740b8823d4034f8587d037fc657"
+    "storageHash": "9e8e1a14d1bcb40060bd0f6ace9c423ee50012abf4b091575ce2ab3899e42f1f"
   },
   "execution": {
     "executionHash": "61420913a490517962ee774d4daca73bfc9a53fbcd7042c81f5d03c605fc296b",

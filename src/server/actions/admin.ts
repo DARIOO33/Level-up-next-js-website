@@ -35,6 +35,7 @@ const productSchema = z.object({
   name: z.string().trim().min(1, 'Name and category are required').max(160),
   slug: z.string().trim().max(120).optional(),
   description: z.string().trim().max(5000).optional(),
+  descriptionFr: z.string().trim().max(5000).optional(),
   featured: z.boolean().optional(),
   category: z.enum(['iems', 'accessories']),
   subCategory: z.string().trim().max(60).optional(),
@@ -52,6 +53,8 @@ const productSchema = z.object({
     .min(1, 'At least one variant is required')
     .max(40),
   specifications: z.record(z.string(), z.string()).optional(),
+  /** Keyed by the English spec name. */
+  specificationsFr: z.record(z.string(), z.object({ name: z.string(), value: z.string() })).optional(),
 });
 export type ProductInput = z.input<typeof productSchema>;
 
@@ -67,12 +70,26 @@ async function uniqueSlug(raw: string, excludeId?: string) {
 }
 
 /** Mongo forbids dots and leading `$` in keys — specs are stored as a plain sub-document, as before. */
+const specKey = (k: string) => k.trim().replace(/\./g, '․').replace(/^\$+/, '');
 const cleanSpecs = (specs?: Record<string, string>) =>
   Object.fromEntries(
     Object.entries(specs ?? {})
-      .map(([k, v]) => [k.trim().replace(/\./g, '․').replace(/^\$+/, ''), String(v).trim()] as const)
+      .map(([k, v]) => [specKey(k), String(v).trim()] as const)
       .filter(([k]) => k),
   );
+
+/** French spec text, keyed like the English specs; rows with nothing filled in, or no English spec left, are dropped. */
+const cleanSpecsFr = (specs: Record<string, string>, fr?: Record<string, { name: string; value: string }>) =>
+  Object.fromEntries(
+    Object.entries(fr ?? {})
+      .map(([k, t]) => [specKey(k), { name: t.name.trim(), value: t.value.trim() }] as const)
+      .filter(([k, t]) => k in specs && (t.name || t.value)),
+  );
+
+const specFields = (data: z.output<typeof productSchema>) => {
+  const specifications = cleanSpecs(data.specifications);
+  return { specifications, specificationsFr: cleanSpecsFr(specifications, data.specificationsFr) };
+};
 
 export async function createProduct(input: ProductInput): Promise<ActionResult<Product>> {
   return run(async () => {
@@ -85,12 +102,13 @@ export async function createProduct(input: ProductInput): Promise<ActionResult<P
     const row = await db.orm.products.create({
       name: data.name,
       description: data.description ?? '',
+      descriptionFr: data.descriptionFr ?? '',
       featured: data.featured ?? false,
       category: data.category,
       subCategory: data.subCategory || null,
       images: data.images,
       variants: data.variants.map((v) => ({ _id: newId(), title: v.title, price: v.price, stock: v.stock, image: v.image })),
-      specifications: cleanSpecs(data.specifications),
+      ...specFields(data),
       stockWatchers: [],
       // `slug` has a unique sparse index: leave the field out entirely when there is none.
       ...(slug ? { slug } : {}),
@@ -132,12 +150,13 @@ export async function updateProduct(param: string, input: ProductInput, notifyWa
     const updated = await db.orm.products.where({ _id: productId }).update({
       name: data.name,
       description: data.description ?? '',
+      descriptionFr: data.descriptionFr ?? '',
       featured: data.featured ?? false,
       category: data.category,
       subCategory: data.subCategory || null,
       images: data.images,
       variants: variants.map((v) => ({ _id: newId(v.id), title: v.title, price: v.price, stock: v.stock, image: v.image })),
-      specifications: cleanSpecs(data.specifications),
+      ...specFields(data),
       ...(slug ? { slug } : {}),
     });
     if (!updated) return fail('Product not found');

@@ -41,7 +41,7 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
     const words = q.split(/\s+/);
     return index
       .filter((p) => {
-        const hay = `${p.name} ${p.subCategory ?? ''} ${p.category} ${p.description}`.toLowerCase();
+        const hay = `${p.name} ${p.subCategory ?? ''} ${p.category} ${p.description} ${p.descriptionFr}`.toLowerCase();
         return words.every((w) => hay.includes(w));
       })
       .slice(0, 7);

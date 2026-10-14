@@ -6,38 +6,47 @@ import { BellRing, Copy, ImageUp, Pencil, Plus, Trash2, X, Zap } from 'lucide-re
 import { Field, Modal, Spinner } from '@/components/ui';
 import { createProduct, deleteProduct, getWatchersSummary, updateProduct, type ProductInput, type WatcherSummary } from '@/server/actions/admin';
 import { ACCESSORY_SUBS } from '@/lib/constants';
+import { defaultSpecNameFr } from '@/lib/product-copy';
 import type { Product } from '@/lib/types';
 import { cn, formatPrice, img, minPrice, totalStock } from '@/lib/utils';
 import { Confirm, IconAction, PAGE_SIZE, Pager, Select, Table, Td, Toolbar, usePage } from './shared';
 
 type Mode = 'create' | 'edit' | 'duplicate';
 type VariantForm = { id?: string; title: string; price: string; stock: string; image: string };
+type SpecForm = { key: string; value: string; nameFr: string; valueFr: string };
 type Form = {
   name: string;
   slug: string;
   description: string;
+  descriptionFr: string;
   category: 'iems' | 'accessories';
   subCategory: string;
   featured: boolean;
   images: string[];
   variants: VariantForm[];
-  specifications: [string, string][];
+  specifications: SpecForm[];
 };
 
 const emptyVariant = (): VariantForm => ({ title: '', price: '', stock: '', image: '' });
-const emptyForm = (): Form => ({ name: '', slug: '', description: '', category: 'iems', subCategory: '', featured: false, images: [''], variants: [emptyVariant()], specifications: [] });
+const emptyForm = (): Form => ({ name: '', slug: '', description: '', descriptionFr: '', category: 'iems', subCategory: '', featured: false, images: [''], variants: [emptyVariant()], specifications: [] });
 
 const toForm = (product: Product, mode: Mode): Form => ({
   name: mode === 'duplicate' ? `${product.name} (copy)` : product.name,
   slug: mode === 'duplicate' ? '' : product.slug ?? '',
   description: product.description,
+  descriptionFr: product.descriptionFr,
   category: product.category === 'accessories' ? 'accessories' : 'iems',
   subCategory: product.subCategory ?? '',
   featured: product.featured,
   images: product.images.length ? [...product.images] : [''],
   // A duplicate gets fresh variant ids; an edit keeps them so carts and orders stay linked.
   variants: product.variants.map((v) => ({ id: mode === 'edit' ? v.id : undefined, title: v.title, price: String(v.price), stock: String(v.stock), image: v.image })),
-  specifications: Object.entries(product.specifications),
+  specifications: Object.entries(product.specifications).map(([key, value]) => ({
+    key,
+    value,
+    nameFr: product.specificationsFr[key]?.name ?? '',
+    valueFr: product.specificationsFr[key]?.value ?? '',
+  })),
 });
 
 export function ProductsTab({ products, brands }: { products: Product[]; brands: string[] }) {
@@ -141,6 +150,7 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const setVariant = (index: number, patch: Partial<VariantForm>) => set('variants', form.variants.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  const setSpecFr = (key: string, patch: Partial<SpecForm>) => set('specifications', form.specifications.map((s) => (s.key === key ? { ...s, ...patch } : s)));
   const setImage = (index: number, value: string) => set('images', form.images.map((x, i) => (i === index ? value : x)));
 
   const pickFile = (kind: 'image' | 'variant', index: number) => {
@@ -173,7 +183,8 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
   const addSpec = () => {
     const key = spec.key.trim();
     if (!key) return;
-    set('specifications', [...form.specifications.filter(([k]) => k !== key), [key, spec.value.trim()]]);
+    const existing = form.specifications.find((s) => s.key === key);
+    set('specifications', [...form.specifications.filter((s) => s.key !== key), { key, value: spec.value.trim(), nameFr: existing?.nameFr ?? '', valueFr: existing?.valueFr ?? '' }]);
     setSpec({ key: '', value: '' });
   };
 
@@ -195,12 +206,14 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
       name: form.name.trim(),
       slug: form.slug.trim() || undefined,
       description: form.description.trim(),
+      descriptionFr: form.descriptionFr.trim(),
       category: form.category,
       subCategory: form.subCategory.trim() || undefined,
       featured: form.featured,
       images,
       variants,
-      specifications: Object.fromEntries(form.specifications),
+      specifications: Object.fromEntries(form.specifications.map((s) => [s.key, s.value])),
+      specificationsFr: Object.fromEntries(form.specifications.map((s) => [s.key, { name: s.nameFr.trim(), value: s.valueFr.trim() }])),
     };
   };
 
@@ -253,7 +266,12 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
           </Field>
         </div>
 
-        <Field label="Description"><textarea className="input" rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Short product description…" /></Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Description (English)"><textarea className="input" rows={5} value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Sound signature, who it is for, what is in the box…" /></Field>
+          <Field label="Description (French)" hint="Shown on the /fr page and to Google France. Empty = the English text is shown.">
+            <textarea className="input" rows={5} lang="fr" value={form.descriptionFr} onChange={(e) => set('descriptionFr', e.target.value)} placeholder="Signature sonore, pour qui, contenu de la boîte…" />
+          </Field>
+        </div>
 
         <label className="flex w-fit items-center gap-3 text-sm">
           <input type="checkbox" checked={form.featured} onChange={(e) => set('featured', e.target.checked)} className="size-4 accent-brand-500" />
@@ -303,15 +321,22 @@ function ProductModal({ mode, product, brands, onClose }: { mode: Mode; product:
           <legend className="label">Specifications (optional)</legend>
           {form.specifications.length > 0 && (
             <ul className="mb-2 divide-y divide-line overflow-hidden rounded-2xl border border-line">
-              {form.specifications.map(([key, value]) => (
-                <li key={key} className="flex items-center gap-3 px-4 py-2 text-sm">
-                  <span className="w-32 shrink-0 font-mono text-[11px] uppercase tracking-wider text-faint">{key}</span>
-                  <span className="min-w-0 flex-1 truncate">{value}</span>
-                  <button type="button" onClick={() => set('specifications', form.specifications.filter(([k]) => k !== key))} className="icon-btn size-8" aria-label={`Remove ${key}`}><X size={14} /></button>
+              {form.specifications.map(({ key, value, nameFr, valueFr }) => (
+                <li key={key} className="grid gap-2 px-4 py-3 text-sm">
+                  <div className="flex items-center gap-3">
+                    <span className="w-32 shrink-0 font-mono text-[11px] uppercase tracking-wider text-faint">{key}</span>
+                    <span className="min-w-0 flex-1 truncate">{value}</span>
+                    <button type="button" onClick={() => set('specifications', form.specifications.filter((s) => s.key !== key))} className="icon-btn size-8" aria-label={`Remove ${key}`}><X size={14} /></button>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                    <input className="input h-9 rounded-xl px-3 text-xs" lang="fr" value={nameFr} onChange={(e) => setSpecFr(key, { nameFr: e.target.value })} placeholder={defaultSpecNameFr(key) || key} aria-label={`${key} — French name`} />
+                    <input className="input h-9 rounded-xl px-3 text-xs" lang="fr" value={valueFr} onChange={(e) => setSpecFr(key, { valueFr: e.target.value })} placeholder={`FR: ${value}`} aria-label={`${key} — French value`} />
+                  </div>
                 </li>
               ))}
             </ul>
           )}
+          {form.specifications.length > 0 && <p className="mb-3 text-xs text-faint">Second line of each spec = French version. Leave a box empty to reuse the greyed-out text (common names like Driver or Impedance are already translated).</p>}
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_1.4fr_auto]">
             <input className="input h-11" value={spec.key} onChange={(e) => setSpec((s) => ({ ...s, key: e.target.value }))} placeholder="Key (e.g. Driver)" aria-label="Specification name" />
             <input className="input h-11" value={spec.value} onChange={(e) => setSpec((s) => ({ ...s, value: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSpec(); } }} placeholder="Value" aria-label="Specification value" />

@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-mongo/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'65a0b9dd4d4b47dfec279f5d10417d48d2ba7740b8823d4034f8587d037fc657'>;
+  StorageHashBase<'9e8e1a14d1bcb40060bd0f6ace9c423ee50012abf4b091575ce2ab3899e42f1f'>;
 export type ExecutionHash =
   ExecutionHashBase<'61420913a490517962ee774d4daca73bfc9a53fbcd7042c81f5d03c605fc296b'>;
 export type ProfileHash =
@@ -169,11 +169,13 @@ export type FieldOutputTypes = {
       readonly category: CodecTypes['mongo/string@1']['output'];
       readonly createdAt: CodecTypes['mongo/date@1']['output'];
       readonly description: CodecTypes['mongo/string@1']['output'] | null;
+      readonly descriptionFr: CodecTypes['mongo/string@1']['output'] | null;
       readonly featured: CodecTypes['mongo/bool@1']['output'] | null;
       readonly images: ReadonlyArray<CodecTypes['mongo/string@1']['output']>;
       readonly name: CodecTypes['mongo/string@1']['output'];
       readonly slug: CodecTypes['mongo/string@1']['output'] | null;
       readonly specifications: CodecTypes['mongo/json@1']['output'] | null;
+      readonly specificationsFr: CodecTypes['mongo/json@1']['output'] | null;
       readonly stockWatchers: ReadonlyArray<StockWatcherOutput>;
       readonly subCategory: CodecTypes['mongo/string@1']['output'] | null;
       readonly updatedAt: CodecTypes['mongo/date@1']['output'];
@@ -278,11 +280,13 @@ export type FieldInputTypes = {
       readonly category: CodecTypes['mongo/string@1']['input'];
       readonly createdAt: CodecTypes['mongo/date@1']['input'];
       readonly description: CodecTypes['mongo/string@1']['input'] | null;
+      readonly descriptionFr: CodecTypes['mongo/string@1']['input'] | null;
       readonly featured: CodecTypes['mongo/bool@1']['input'] | null;
       readonly images: ReadonlyArray<CodecTypes['mongo/string@1']['input']>;
       readonly name: CodecTypes['mongo/string@1']['input'];
       readonly slug: CodecTypes['mongo/string@1']['input'] | null;
       readonly specifications: CodecTypes['mongo/json@1']['input'] | null;
+      readonly specificationsFr: CodecTypes['mongo/json@1']['input'] | null;
       readonly stockWatchers: ReadonlyArray<StockWatcherInput>;
       readonly subCategory: CodecTypes['mongo/string@1']['input'] | null;
       readonly updatedAt: CodecTypes['mongo/date@1']['input'];
@@ -391,11 +395,13 @@ export namespace Models {
     category: CodecTypes['mongo/string@1']['output'];
     createdAt: CodecTypes['mongo/date@1']['output'];
     description: CodecTypes['mongo/string@1']['output'] | null;
+    descriptionFr: CodecTypes['mongo/string@1']['output'] | null;
     featured: CodecTypes['mongo/bool@1']['output'] | null;
     images: ReadonlyArray<CodecTypes['mongo/string@1']['output']>;
     name: CodecTypes['mongo/string@1']['output'];
     slug: CodecTypes['mongo/string@1']['output'] | null;
     specifications: CodecTypes['mongo/json@1']['output'] | null;
+    specificationsFr: CodecTypes['mongo/json@1']['output'] | null;
     stockWatchers: ReadonlyArray<StockWatcherOutput>;
     subCategory: CodecTypes['mongo/string@1']['output'] | null;
     updatedAt: CodecTypes['mongo/date@1']['output'];
@@ -654,6 +660,7 @@ type ContractBase = Omit<
                     readonly category: { readonly bsonType: 'string' };
                     readonly createdAt: { readonly bsonType: 'date' };
                     readonly description: { readonly bsonType: readonly ['null', 'string'] };
+                    readonly descriptionFr: { readonly bsonType: readonly ['null', 'string'] };
                     readonly featured: { readonly bsonType: readonly ['null', 'bool'] };
                     readonly images: {
                       readonly bsonType: 'array';
@@ -662,6 +669,18 @@ type ContractBase = Omit<
                     readonly name: { readonly bsonType: 'string' };
                     readonly slug: { readonly bsonType: readonly ['null', 'string'] };
                     readonly specifications: {
+                      readonly bsonType: readonly [
+                        'object',
+                        'array',
+                        'string',
+                        'double',
+                        'int',
+                        'long',
+                        'bool',
+                        'null',
+                      ];
+                    };
+                    readonly specificationsFr: {
                       readonly bsonType: readonly [
                         'object',
                         'array',
@@ -1104,6 +1123,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'mongo/string@1' };
               };
+              readonly descriptionFr: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'mongo/string@1' };
+              };
               readonly featured: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'mongo/bool@1' };
@@ -1122,6 +1145,10 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'mongo/string@1' };
               };
               readonly specifications: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'mongo/json@1' };
+              };
+              readonly specificationsFr: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'mongo/json@1' };
               };

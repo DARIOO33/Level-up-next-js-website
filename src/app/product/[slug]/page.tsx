@@ -6,6 +6,7 @@ import { ProductDetail } from '@/components/product/ProductDetail';
 import { localizePath, type Locale } from '@/i18n';
 import { alternatesFor, getLocale, getT } from '@/i18n/server';
 import { CATEGORY_LABELS } from '@/lib/constants';
+import { productCopy } from '@/lib/product-copy';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import type { Product, Review } from '@/lib/types';
 import { inStock, maxPrice, minPrice } from '@/lib/utils';
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: PageProps<'/product/[slug]'>)
   const title = `${product.name} Tunisie — Prix ${price} TND`;
   const [locale, alternates] = await Promise.all([getLocale(), alternatesFor(`/product/${segment}`)]);
   const description = (
-    product.description ||
+    productCopy(product, locale).description ||
     (locale === 'fr'
       ? `Achetez ${product.name} en Tunisie chez Level Up TN. Produit authentique, livraison gratuite en 24–72h, paiement à la livraison.`
       : `Buy ${product.name} in Tunisia at Level Up TN. Authentic product, free delivery in 24–72h, cash on delivery.`)
@@ -50,11 +51,12 @@ export async function generateMetadata({ params }: PageProps<'/product/[slug]'>)
 function productSchema(product: Product, reviews: Review[], avg: number | null, locale: Locale) {
   const url = `${SITE_URL}${localizePath(`/product/${product.slug || product.id}`, locale)}`;
   const brand = product.category === 'iems' ? product.subCategory : null;
+  const { description, specs } = productCopy(product, locale);
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description || undefined,
+    description: description || undefined,
     image: product.images,
     sku: product.id,
     url,
@@ -101,8 +103,8 @@ function productSchema(product: Product, reviews: Review[], avg: number | null, 
           })),
         }
       : {}),
-    ...(Object.keys(product.specifications).length
-      ? { additionalProperty: Object.entries(product.specifications).map(([name, value]) => ({ '@type': 'PropertyValue', name, value })) }
+    ...(specs.length
+      ? { additionalProperty: specs.map(([, name, value]) => ({ '@type': 'PropertyValue', name, value })) }
       : {}),
   };
 }
