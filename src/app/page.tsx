@@ -27,7 +27,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden">
         <div className="grid-lines pointer-events-none absolute inset-0" aria-hidden />
         <div className="pointer-events-none absolute -top-40 left-1/2 size-[720px] -translate-x-1/2 rounded-full bg-brand-500/20 blur-[140px]" aria-hidden />
-        <div className="shell relative grid items-center gap-12 pb-20 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-20">
+        <div className="shell relative grid grid-cols-[minmax(0,1fr)] items-center gap-12 pb-20 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-20">
           <div className="animate-rise">
             <p className="eyebrow">{t.hero.badge}</p>
             <h1 className="display mt-6 text-[clamp(3.4rem,9.5vw,7.5rem)] uppercase">
@@ -105,10 +105,10 @@ export default async function HomePage() {
         <div className="grid gap-5 md:grid-cols-2">
           <Reveal>
             <Link href="/shop?cat=iems" className="group relative flex h-80 flex-col justify-end overflow-hidden rounded-[2rem] bg-[#0f0a1f] p-8 text-white md:h-full md:min-h-[440px]">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(124,58,255,0.55),transparent_60%)] transition duration-700 group-hover:scale-110" aria-hidden />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(124,58,237,0.55),transparent_60%)] transition duration-700 group-hover:scale-110" aria-hidden />
               <div className="absolute right-[-8%] top-[-12%] size-80 rounded-full border border-white/10 transition duration-700 group-hover:scale-110" aria-hidden />
               <div className="absolute right-[4%] top-[2%] size-52 rounded-full border border-white/15 transition duration-700 group-hover:scale-125" aria-hidden />
-              <div className="absolute right-[14%] top-[14%] size-24 rounded-full bg-brand-500 shadow-[0_0_80px_rgba(124,58,255,0.9)]" aria-hidden />
+              <div className="absolute right-[14%] top-[14%] size-24 rounded-full bg-brand-500 shadow-[0_0_80px_rgba(124,58,237,0.9)]" aria-hidden />
               <div className="relative">
                 <span className="tag bg-white/10 text-white dark:text-white">{t.ui.home.cat_iems_tag}</span>
                 <h3 className="display mt-4 text-6xl uppercase sm:text-7xl">IEMs</h3>

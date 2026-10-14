@@ -26,7 +26,7 @@ const getTransporter = () => {
 const C = {
   bg:          "#f9f9fb",
   card:        "#ffffff",
-  purple:      "#7c3aff",
+  purple:      "#7c3aed",
   purpleLight: "#ede9fe",
   text:        "#111827",
   textSub:     "#374151",
@@ -110,10 +110,10 @@ const wrap = ({ preheader = "", body }: { preheader?: string; body: string }) =>
                 <!-- Logo mark -->
                 <table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;vertical-align:middle;">
                   <tr>
-                    <td style="width:10px;height:10px;background:${C.purple};transform:rotate(45deg);"></td>
-                    <td style="width:6px;"></td>
-                    <td style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;letter-spacing:5px;color:${C.text};">
-                      LEVEL<span style="color:${C.purple};">UP</span>
+                    <td style="vertical-align:middle;"><img src="${SITE_URL}/brand-mark.png" width="17" height="24" alt="" style="display:block;border:0;" /></td>
+                    <td style="width:10px;"></td>
+                    <td style="font-family:Arial,'Helvetica Neue',sans-serif;font-size:15px;font-weight:800;letter-spacing:5px;color:#1a1025;vertical-align:middle;">
+                      LEVEL UP
                     </td>
                   </tr>
                 </table>

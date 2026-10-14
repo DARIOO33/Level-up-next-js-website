@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque, Geist, Geist_Mono } from 'next/font/google';
+import { Bricolage_Grotesque, Geist_Mono, Manrope } from 'next/font/google';
 import { PackageX } from 'lucide-react';
 import { Floating } from '@/components/layout/Floating';
 import { Footer } from '@/components/layout/Footer';
@@ -13,7 +13,7 @@ import { DEFAULT_BRANDS, getSettings, getWishlistIds } from '@/server/data';
 import { getSessionUser } from '@/server/session';
 import './globals.css';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'], display: 'swap' });
+const manrope = Manrope({ variable: '--font-manrope', subsets: ['latin'], display: 'swap' });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], display: 'swap' });
 const bricolage = Bricolage_Grotesque({ variable: '--font-bricolage', subsets: ['latin'], display: 'swap', axes: ['wdth', 'opsz'] });
 
@@ -114,7 +114,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   const dict = getDictionary(locale);
 
   return (
-    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}>
+    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning className={`${manrope.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema).replace(/</g, '\\u003c') }} />

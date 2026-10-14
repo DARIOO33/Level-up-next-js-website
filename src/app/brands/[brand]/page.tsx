@@ -39,7 +39,7 @@ export default async function BrandPage({ params }: PageProps<'/brands/[brand]'>
   const brand = fr ? { ...entry.brand, ...fr.brand } : entry.brand;
   const ui = BRAND_UI[locale];
   const named = (text: string) => fill(text, { brand: brand.name });
-  const accent = brand.accentColor ?? '#7c3aff';
+  const accent = brand.accentColor ?? '#7c3aed';
   const products = (await getProducts()).filter((p) => p.name.toLowerCase().includes(brand.name.toLowerCase()) || p.subCategory?.toLowerCase() === brand.slug.toLowerCase());
 
   const faqSchema = {

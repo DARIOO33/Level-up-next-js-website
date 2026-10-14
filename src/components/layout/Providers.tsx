@@ -13,7 +13,7 @@ function ThemedToaster() {
     <Toaster
       position="bottom-right"
       theme={resolvedTheme === 'light' ? 'light' : 'dark'}
-      toastOptions={{ style: { fontFamily: 'var(--font-geist-sans)', borderRadius: 16 } }}
+      toastOptions={{ style: { fontFamily: 'var(--font-manrope)', borderRadius: 16 } }}
     />
   );
 }
@@ -36,7 +36,7 @@ export function Providers({
   children: ReactNode;
 }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
       <I18nProvider locale={locale} dict={dict}>
         {/* Keyed by user so a login/logout resets the wishlist state. */}
         <AppProvider key={user?.id ?? 'guest'} user={user} settings={settings} googleEnabled={googleEnabled} wishlistIds={wishlistIds}>

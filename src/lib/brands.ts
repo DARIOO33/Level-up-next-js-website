@@ -47,7 +47,7 @@ const kzBrand: BrandGuide = {
   name: 'KZ',
   tagline: 'Knowledge Zenith — Legendary Budget IEMs Available in Tunisia',
   heroGradient: 'linear-gradient(135deg, #0a0014 0%, #120020 40%, #050508 100%)',
-  accentColor: '#7c3aff',
+  accentColor: '#7c3aed',
   description: [
     'KZ (Knowledge Zenith) is one of the most popular IEM brands in the world, known for delivering exceptional sound quality at budget-friendly prices. Founded in China, KZ has become the go-to brand for audiophiles who want top-tier performance without breaking the bank.',
     'At Level Up TN, we stock a curated selection of KZ in-ear monitors available for delivery across all of Tunisia — from Tunis and Sfax to Sousse and beyond. Whether you\'re a first-time IEM buyer or an experienced audiophile, KZ has a model for you.',

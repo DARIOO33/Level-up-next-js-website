@@ -84,13 +84,13 @@ export function Tuner({ className }: { className?: string }) {
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`${copy.name}: ${copy.desc}`}>
           <defs>
             <linearGradient id="tuner-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#7c3aff" stopOpacity="0.38" />
-              <stop offset="100%" stopColor="#7c3aff" stopOpacity="0" />
+              <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.38" />
+              <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="tuner-line" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#bc9dff" />
-              <stop offset="55%" stopColor="#7c3aff" />
-              <stop offset="100%" stopColor="#bc9dff" />
+              <stop offset="0%" stopColor="#c4b5fd" />
+              <stop offset="55%" stopColor="#7c3aed" />
+              <stop offset="100%" stopColor="#c4b5fd" />
             </linearGradient>
           </defs>
 
@@ -109,7 +109,7 @@ export function Tuner({ className }: { className?: string }) {
           <path d={area} fill="url(#tuner-fill)" />
           <path d={line} fill="none" stroke="url(#tuner-line)" strokeWidth="3" strokeLinecap="round" />
           {FREQS.map((hz, i) => (
-            <circle key={hz} cx={x(hz)} cy={y(values[i])} r="4" fill="var(--surface)" stroke="#7c3aff" strokeWidth="2" />
+            <circle key={hz} cx={x(hz)} cy={y(values[i])} r="4" fill="var(--surface)" stroke="#7c3aed" strokeWidth="2" />
           ))}
 
           {t.ui.home.bands.map((band, i) => (
