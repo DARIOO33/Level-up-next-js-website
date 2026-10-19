@@ -40,7 +40,7 @@ export async function Footer() {
     <footer className="mt-24 border-t border-line bg-surface">
       <div className="shell grid gap-12 py-16 lg:grid-cols-[1.3fr_2fr]">
         <div className="max-w-sm">
-          <Logo height={38} />
+          <Logo height={52} />
           <p className="mt-4 text-sm leading-relaxed text-soft">{t.footer.tagline}</p>
           <div className="mt-8">
             <p className="display text-xl">{t.footer.newsletter_title}</p>

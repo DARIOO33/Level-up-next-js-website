@@ -2,17 +2,14 @@ import Image from 'next/image';
 import Link from '@/components/Link';
 import { cn } from '@/lib/utils';
 
-/**
- * Horizontal lockup for headers: the brand mark beside the wordmark. The mark is
- * the same in both themes; the wordmark follows the text colour (Off White on
- * dark, Core Black-violet on light). Wordmark per the brand guide: Arial 800, wide tracking.
- */
-export function Logo({ className, height = 34 }: { className?: string; height?: number }) {
-  const markWidth = Math.round(height * (512 / 721));
+/** Both artworks are rendered and swapped with CSS, so the right one shows before hydration. */
+export function Logo({ className, height = 40 }: { className?: string; height?: number }) {
+  // The PNGs are trimmed to the artwork (≈5:1), so `height` is the visible height of the lockup.
+  const width = Math.round(height * 5.05);
   return (
-    <Link href="/" aria-label="Level Up TN — home" className={cn('inline-flex shrink-0 items-center', className)} style={{ gap: Math.round(height * 0.32) }}>
-      <Image src="/brand-mark.png" alt="" width={markWidth} height={height} preload className="block" style={{ width: markWidth, height }} />
-      <span className="wordmark" style={{ fontSize: Math.round(height * 0.5) }}>LEVEL UP</span>
+    <Link href="/" aria-label="Level Up TN — home" className={cn('inline-flex shrink-0 items-center', className)}>
+      <Image src="/logo.png" alt="Level Up TN" width={width} height={height} preload className="block h-auto max-w-[52vw] dark:hidden" style={{ width, height: 'auto' }} />
+      <Image src="/logodark.png" alt="Level Up TN" width={width} height={height} preload className="hidden h-auto max-w-[52vw] dark:block" style={{ width, height: 'auto' }} />
     </Link>
   );
 }
