@@ -10,6 +10,7 @@ import { registerWithOtp, sendSignupOtp } from '@/server/actions/account';
 import { placeOrder, resendGuestOrderOtp, validateCoupon, verifyGuestOrder, type CouponPreview } from '@/server/actions/store';
 import { fill } from '@/i18n';
 import { useT } from '@/i18n/client';
+import { track } from '@/lib/meta-pixel';
 import type { Address } from '@/lib/types';
 import { EMAIL_RE, TN_PHONE_RE, cn, formatPrice, img, shortId } from '@/lib/utils';
 import { cartTotal, useCartStore, useHydrated } from '@/store';
@@ -45,6 +46,7 @@ export function CheckoutView({ addresses }: { addresses: Address[] }) {
   const [pending, start] = useTransition();
   const [couponPending, startCoupon] = useTransition();
   const [cooldown, setCooldown] = useState(0);
+  const [purchase, setPurchase] = useState<{ orderId: string; value: number; currency: string; content_ids: string[]; contents: { id: string; quantity: number; item_price: number }[]; num_items: number } | null>(null);
 
   const subtotal = cartTotal(items);
   const total = coupon ? Math.max(0, subtotal - coupon.discount) : subtotal;
@@ -68,6 +70,29 @@ export function CheckoutView({ addresses }: { addresses: Address[] }) {
     const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
+
+  useEffect(() => {
+    if (!purchase) return;
+    track('Purchase', {
+      value: purchase.value,
+      currency: purchase.currency,
+      content_ids: purchase.content_ids,
+      content_type: 'product',
+      contents: purchase.contents,
+      num_items: purchase.num_items,
+    });
+  }, [purchase]);
+
+  const capturePurchase = (orderId: string) => {
+    setPurchase({
+      orderId,
+      value: total,
+      currency: 'TND',
+      content_ids: items.map((i) => i.productSlug || i.productId),
+      contents: items.map((i) => ({ id: i.productSlug || i.productId, quantity: i.quantity, item_price: i.price })),
+      num_items: items.reduce((n, i) => n + i.quantity, 0),
+    });
+  };
 
   const pickAddress = (id: string | 'new') => {
     setAddressId(id);
@@ -124,6 +149,7 @@ export function CheckoutView({ addresses }: { addresses: Address[] }) {
         toast.success(t.ui.checkout.code_sent);
       } else {
         setOrderId(result.data.orderId);
+        capturePurchase(result.data.orderId);
         clear();
         setStep('success');
         router.refresh();
@@ -141,6 +167,7 @@ export function CheckoutView({ addresses }: { addresses: Address[] }) {
         return void toast.error(result.message);
       }
       setOrderId(result.data.orderId);
+      capturePurchase(result.data.orderId);
       clear();
       setStep('success');
       window.scrollTo({ top: 0 });

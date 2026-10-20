@@ -6,6 +6,7 @@ import { BadgeCheck, Banknote, Bell, BellRing, Check, GitCompareArrows, Heart, M
 import { getNotifyStatus, toggleNotify } from '@/server/actions/account';
 import { fill, plural } from '@/i18n';
 import { useLocale, useT } from '@/i18n/client';
+import { track } from '@/lib/meta-pixel';
 import { productCopy } from '@/lib/product-copy';
 import type { Product, Review } from '@/lib/types';
 import { cn, formatDate, formatPrice, img } from '@/lib/utils';
@@ -57,6 +58,14 @@ export function ProductDetail({ product, reviews, reviewCount, reviewAvg }: { pr
   const add = () => {
     if (soldOut) return;
     addItem(product, variant, quantity);
+    track('AddToCart', {
+      value: variant.price * quantity,
+      currency: 'TND',
+      content_ids: [product.id],
+      content_type: 'product',
+      contents: [{ id: product.id, quantity, item_price: variant.price }],
+      num_items: quantity,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
     toast.success(fill(t.ui.product.added_toast, { name: product.name }), { action: { label: t.nav.cart, onClick: openDrawer } });
