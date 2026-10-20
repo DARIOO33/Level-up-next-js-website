@@ -34,11 +34,12 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              // connect.facebook.net: Meta Pixel (fbevents.js) + its beacon/worker scripts.
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self' data:",
               "img-src 'self' data: blob: https: http://localhost:*",
-              "connect-src 'self'" + (process.env.NODE_ENV === 'development' ? ' ws: wss:' : ''),
+              "connect-src 'self' https://www.facebook.com https://*.facebook.com https://*.facebook.net" + (process.env.NODE_ENV === 'development' ? ' ws: wss:' : ''),
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
