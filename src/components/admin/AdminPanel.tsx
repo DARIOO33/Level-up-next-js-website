@@ -315,8 +315,8 @@ function OrdersTable({ orders, compact }: { orders: Order[]; compact?: boolean }
                 <span className="block text-xs text-faint">{change.order.customer.email}</span>
               </span>
             </label>
-            {(change.status === 'shipped' || change.status === 'delivered') && (
-              <p className="mt-3 text-xs text-faint">Review requests are created automatically when an order is shipped or delivered.</p>
+            {change.status === 'delivered' && (
+              <p className="mt-3 text-xs text-faint">A review request is sent automatically when an order is marked delivered.</p>
             )}
           </>
         )}

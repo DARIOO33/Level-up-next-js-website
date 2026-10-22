@@ -225,8 +225,7 @@ export async function getWatchersSummary(param: string): Promise<ActionResult<Wa
 
 /**
  * Status change, optional customer email, and the review-request flow:
- *   shipped   → review tokens are created (guests get the links by email)
- *   delivered → registered customers are pointed at /orders, guests get links again
+ *   delivered → review tokens are created and review requests are emailed
  */
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus, notifyClient: boolean): Promise<ActionResult<Order>> {
   return run(async () => {
@@ -240,19 +239,16 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus,
     if (!row) return fail('Order not found');
     const order = toOrder(row);
 
-    const becameShipped = newStatus === 'shipped' && oldStatus !== 'shipped';
     const becameDelivered = newStatus === 'delivered' && oldStatus !== 'delivered';
     const reviewEmails: { productName: string; reviewUrl: string; isLoggedIn: boolean }[] = [];
 
-    if (becameShipped || becameDelivered) {
+    if (becameDelivered) {
       try {
         const registered = await getUserByEmail(order.customer.email);
         if (registered) {
           const existing = await mongoDb.collection('storereviews').countDocuments({ orderId: oid(order.id) });
-          if (becameShipped || existing === 0) await createReviewTokens(order);
-          if (becameDelivered) {
-            reviewEmails.push({ productName: order.items.map((i) => i.productName).join(', '), reviewUrl: `${SITE_URL}/orders`, isLoggedIn: true });
-          }
+          if (existing === 0) await createReviewTokens(order);
+          reviewEmails.push({ productName: order.items.map((i) => i.productName).join(', '), reviewUrl: `${SITE_URL}/orders`, isLoggedIn: true });
         } else {
           const tokens = await createReviewTokens(order);
           for (const { productName, token } of tokens) {
